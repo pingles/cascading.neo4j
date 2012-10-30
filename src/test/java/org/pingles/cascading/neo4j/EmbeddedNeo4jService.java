@@ -48,4 +48,12 @@ public class EmbeddedNeo4jService {
     public boolean nodeExistsInDatabase(Node node) {
         return service.getNodeById(node.getId()) != null;
     }
+
+    public GraphDatabaseService getService() {
+        return service;
+    }
+
+    public Node getNode(long nodeId) {
+        return service.getNodeById(nodeId);
+    }
 }

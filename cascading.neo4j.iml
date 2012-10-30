@@ -72,8 +72,40 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: log4j:log4j:1.2.16" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: thirdparty:jgrapht-jdk1.6:0.8.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.codehaus.janino:janino:2.5.16" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.slf4j:slf4j-simple:1.6.4" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: cascading:cascading-test:2.0.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: javax.ws.rs:jsr311-api:1.1.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-test:1.0.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.hadoop:hadoop-core:1.0.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: commons-cli:commons-cli:1.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: xmlenc:xmlenc:0.52" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: commons-httpclient:commons-httpclient:3.0.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: commons-codec:commons-codec:1.4" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.commons:commons-math:2.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: commons-net:commons-net:1.4.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: oro:oro:2.0.8" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: tomcat:jasper-runtime:5.5.12" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: tomcat:jasper-compiler:5.5.12" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mortbay.jetty:jsp-api-2.1:6.1.14" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mortbay.jetty:servlet-api-2.5:6.1.14" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mortbay.jetty:jsp-2.1:6.1.14" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.eclipse.jdt:core:3.1.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: ant:ant:1.6.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: commons-el:commons-el:1.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: net.java.dev.jets3t:jets3t:0.7.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: net.sf.kosmosfs:kfs:0.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: hsqldb:hsqldb:1.8.0.10" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.ftpserver:ftplet-api:1.0.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.mina:mina-core:2.0.0-M5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.ftpserver:ftpserver-core:1.0.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apache.ftpserver:ftpserver-deprecated:1.0.0-M2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: cascading:cascading-xml:2.0.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.ccil.cowan.tagsoup:tagsoup:1.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: cascading:cascading-local:2.0.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: com.google.guava:guava:10.0.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: com.google.code.findbugs:jsr305:1.3.9" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: cascading:cascading-hadoop:2.0.3" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.slf4j:slf4j-simple:1.6.4" level="project" />
   </component>
 </module>
 
