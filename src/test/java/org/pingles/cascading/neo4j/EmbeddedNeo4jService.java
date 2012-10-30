@@ -1,4 +1,4 @@
-package org.pingles;
+package org.pingles.cascading.neo4j;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
