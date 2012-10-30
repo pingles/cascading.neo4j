@@ -2,6 +2,8 @@
 
 Provides a Tap and Scheme suitable for sinking Cascading flows to a running Neo4j database.
 
+Current build status: ![Build status](https://secure.travis-ci.org/pingles/cascading.neo4j.png)
+
 ## TODO
 
 * Allow relations between nodes from difference Indexes
