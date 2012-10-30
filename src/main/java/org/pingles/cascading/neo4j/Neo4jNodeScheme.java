@@ -30,7 +30,7 @@ public class Neo4jNodeScheme extends Scheme {
     public Neo4jNodeScheme(GraphDatabaseService service, IndexSpec indexSpec) {
         this.service = service;
         this.indexSpec = indexSpec;
-        index = service.index().forNodes(indexSpec.getIndexName());
+        index = service.index().forNodes(indexSpec.getNodeTypeName());
     }
 
     @Override

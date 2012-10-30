@@ -11,7 +11,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.IndexHits;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static junit.framework.Assert.*;
 
@@ -49,5 +54,41 @@ public class FlowTest extends Neo4jTest {
 
         Node pinglesNode = nodes.getSingle();
         assertEquals("pingles", pinglesNode.getProperty("name"));
+    }
+
+    @Test
+    public void shouldCreateRelationshipsBetweenNodes() {
+        LocalPlatform platform = new LocalPlatform();
+
+        // import the nodes
+        Tap nodeSourceTap = platform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
+        Fields nodeIndexFields = new Fields("name");
+        Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", nodeIndexFields)));
+        Pipe nodePipe = new Each("Names", new Fields("name"), new Identity());
+        Flow nodeFlow = platform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
+        nodeFlow.complete();
+
+        // import relationships between previously inserted nodes
+        Tap relationshipSourceTap = platform.getDelimitedFile(new Fields("from", "to", "relationshipType"), ",", "src/test/resources/relations.csv");
+        Tap relationshipSinkTap = new Neo4jTap(new Neo4jRelationshipScheme(this.neo4j.getService(), new IndexSpec("users", nodeIndexFields)));
+        Pipe relPipe = new Each("Relations", new Fields("from", "to", "relationshipType"), new Identity());
+        Flow relFlow = platform.getFlowConnector().connect(relationshipSourceTap, relationshipSinkTap, relPipe);
+        relFlow.complete();
+
+        // lookup one of the nodes and check the association
+        IndexHits<Node> nodes = neo4j.indexForNodes("users").get("name", "pingles");
+        Node pinglesNode = nodes.getSingle();
+
+        List<Relationship> relationships = toList(pinglesNode.getRelationships());
+        assertEquals(1, relationships.size());
+        assertEquals("plam", relationships.get(0).getEndNode().getProperty("name"));
+    }
+
+    private List<Relationship> toList(Iterable<Relationship> rels) {
+        List<Relationship> res = new ArrayList<Relationship>();
+        for (Relationship rel : rels) {
+            res.add(rel);
+        }
+        return res;
     }
 }

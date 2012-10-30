@@ -6,12 +6,17 @@ public class IndexSpec {
     private final String indexName;
     private final Fields fields;
 
-    public IndexSpec(String indexName, Fields fields) {
-        this.indexName = indexName;
+    /**
+     * Create an IndexSpec
+     * @param nodeTypeName - e.g. "users", or "pages" etc.
+     * @param fields
+     */
+    public IndexSpec(String nodeTypeName, Fields fields) {
+        this.indexName = nodeTypeName;
         this.fields = fields;
     }
 
-    public String getIndexName() {
+    public String getNodeTypeName() {
         return indexName;
     }
 

@@ -1,6 +1,7 @@
 package org.pingles.cascading.neo4j;
 
 import cascading.flow.FlowProcess;
+import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.TupleEntryCollector;
@@ -10,9 +11,9 @@ import cascading.tuple.TupleEntrySchemeCollector;
 import java.io.IOException;
 
 public class Neo4jTap extends Tap {
-    private final Neo4jNodeScheme neo4jScheme;
+    private final Scheme neo4jScheme;
 
-    public Neo4jTap(Neo4jNodeScheme scheme) {
+    public Neo4jTap(Scheme scheme) {
         super(scheme, SinkMode.REPLACE);
         this.neo4jScheme = scheme;
     }
