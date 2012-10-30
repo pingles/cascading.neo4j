@@ -7,5 +7,6 @@ Provides a Tap and Scheme suitable for sinking Cascading flows to a running Neo4
 * Allow relations between nodes from difference Indexes
 * Ensure scheme can connect to remote Neo server
 * Ensure relations fields are of the form: from-key, to-key, relationship-label
+* Specify field names when persisting properties on Nodes. Will be useful given Cascalog prefixes with ? and !
 * Allow relationships to carry properties
 
