@@ -11,15 +11,26 @@ import cascading.tuple.TupleEntry;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
 
 import java.io.IOException;
-import java.util.Iterator;
 
-public class Neo4jScheme extends Scheme {
+/**
+ * Allows the client to sink Nodes in the Neo4j database.
+ */
+public class Neo4jNodeScheme extends Scheme {
     private GraphDatabaseService service;
+    private IndexSpec indexSpec;
+    private Index<Node> index;
 
-    public Neo4jScheme(GraphDatabaseService service) {
+    public Neo4jNodeScheme(GraphDatabaseService service) {
         this.service = service;
+    }
+
+    public Neo4jNodeScheme(GraphDatabaseService service, IndexSpec indexSpec) {
+        this.service = service;
+        this.indexSpec = indexSpec;
+        index = service.index().forNodes(indexSpec.getIndexName());
     }
 
     @Override
@@ -44,7 +55,7 @@ public class Neo4jScheme extends Scheme {
 
         Transaction transaction = service.beginTx();
         try {
-            Node n = service.createNode();
+            Node node = service.createNode();
 
             Fields fields = outgoingEntry.getFields();
 
@@ -52,7 +63,12 @@ public class Neo4jScheme extends Scheme {
                 String fieldName = (String) fields.get(idx);
                 Object fieldValue = outgoingEntry.getTuple().getObject(idx);
 
-                n.setProperty(fieldName, fieldValue);
+                node.setProperty(fieldName, fieldValue);
+            }
+
+            if (index != null) {
+                String indexPropertyName = indexSpec.getIndexPropertyName();
+                index.add(node, indexPropertyName, node.getProperty(indexPropertyName));
             }
 
             transaction.success();

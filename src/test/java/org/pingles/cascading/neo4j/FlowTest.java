@@ -10,6 +10,8 @@ import cascading.tuple.Fields;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.IndexHits;
 
 import static junit.framework.Assert.*;
 
@@ -20,7 +22,7 @@ public class FlowTest extends Neo4jTest {
         LocalPlatform platform = new LocalPlatform();
         Tap sourceTap = platform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
 
-        Tap sinkTap = new Neo4jTap(new Neo4jScheme(this.neo4j.getService()));
+        Tap sinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService()));
         Pipe pipe = new Each("Names", new Fields("name"), new Identity());
 
         Flow flow = platform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
@@ -28,5 +30,24 @@ public class FlowTest extends Neo4jTest {
 
         assertEquals("pingles", neo4j.getNode(1).getProperty("name"));
         assertEquals("plam", neo4j.getNode(2).getProperty("name"));
+    }
+
+    @Test
+    public void shouldCreateNodesAndIndexOnSpecifiedField() {
+        LocalPlatform platform = new LocalPlatform();
+        Tap sourceTap = platform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
+
+        Fields indexFields = new Fields("name");
+        Tap sinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", indexFields)));
+        Pipe pipe = new Each("Names", new Fields("name"), new Identity());
+
+        Flow flow = platform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
+        flow.complete();
+
+        IndexHits<Node> nodes = neo4j.indexForNodes("users").get("name", "pingles");
+        assertEquals(1, nodes.size());
+
+        Node pinglesNode = nodes.getSingle();
+        assertEquals("pingles", pinglesNode.getProperty("name"));
     }
 }

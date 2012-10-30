@@ -6,14 +6,13 @@ import cascading.tap.Tap;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
 import cascading.tuple.TupleEntrySchemeCollector;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 import java.io.IOException;
 
 public class Neo4jTap extends Tap {
-    private final Neo4jScheme neo4jScheme;
+    private final Neo4jNodeScheme neo4jScheme;
 
-    public Neo4jTap(Neo4jScheme scheme) {
+    public Neo4jTap(Neo4jNodeScheme scheme) {
         super(scheme, SinkMode.REPLACE);
         this.neo4jScheme = scheme;
     }

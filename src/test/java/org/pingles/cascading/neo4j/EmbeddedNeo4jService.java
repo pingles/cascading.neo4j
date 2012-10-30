@@ -3,6 +3,7 @@ package org.pingles.cascading.neo4j;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
 import org.neo4j.test.TestGraphDatabaseFactory;
 
 import java.util.ArrayList;
@@ -55,5 +56,9 @@ public class EmbeddedNeo4jService {
 
     public Node getNode(long nodeId) {
         return service.getNodeById(nodeId);
+    }
+
+    public Index<Node> indexForNodes(String indexName) {
+        return service.index().forNodes(indexName);
     }
 }
