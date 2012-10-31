@@ -1,40 +1,43 @@
 package org.pingles.cascading.neo4j;
 
-import cascading.flow.Flow;
-import cascading.operation.Identity;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-import cascading.tap.Tap;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.IndexHits;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static junit.framework.Assert.*;
 
 @RunWith(JUnit4.class)
 public class FlowTest extends Neo4jTest {
-
-    private LocalPlatform localPlatform;
+    protected EmbeddedNeo4jService neo4j;
 
     @Before
-    public void initializePlatform() {
+    public void beforeEach() {
         localPlatform = new LocalPlatform();
+        neo4j = new EmbeddedNeo4jService();
+    }
+
+    @After
+    public void stopNeo4j() {
+        if (neo4j != null) {
+            neo4j.shutdown();
+        }
     }
 
     @Test
     public void shouldSinkContentsToNeo() {
         Fields userFields = new Fields("name");
-        flowNodes("Users", "src/test/resources/names.csv", userFields, userFields);
+        flowNodes("Users", "src/test/resources/names.csv", userFields, userFields, getNeo4jService());
 
         assertEquals("pingles", neo4j.getNode(1).getProperty("name"));
         assertEquals("plam", neo4j.getNode(2).getProperty("name"));
@@ -43,7 +46,7 @@ public class FlowTest extends Neo4jTest {
     @Test
     public void shouldCreateNodesAndIndexOnSpecifiedField() {
         Fields userFields = new Fields("name");
-        flowNodes("Users", "src/test/resources/names.csv", userFields, userFields, new IndexSpec("users", userFields));
+        flowNodes("Users", "src/test/resources/names.csv", userFields, userFields, new IndexSpec("users", userFields), getNeo4jService());
 
         IndexHits<Node> nodes = neo4j.indexForNodes("users").get("name", "pingles");
         assertEquals(1, nodes.size());
@@ -51,12 +54,11 @@ public class FlowTest extends Neo4jTest {
         Node pinglesNode = nodes.getSingle();
         assertEquals("pingles", pinglesNode.getProperty("name"));
     }
-
     @Test
     public void shouldCreateRelationshipsBetweenNodes() {
         Fields userFields = new Fields("name");
-        flowNodes("Users", "src/test/resources/names.csv", userFields, userFields, new IndexSpec("users", userFields));
-        flowRelations("Relations", "src/test/resources/relations.csv", new Fields("from", "to", "relationshipType"), new IndexSpec("users", userFields));
+        flowNodes("Users", "src/test/resources/names.csv", userFields, userFields, new IndexSpec("users", userFields), getNeo4jService());
+        flowRelations("Relations", "src/test/resources/relations.csv", new Fields("from", "to", "relationshipType"), new IndexSpec("users", userFields), getNeo4jService());
 
         // lookup one of the nodes and check the association
         IndexHits<Node> nodes = neo4j.indexForNodes("users").get("name", "pingles");
@@ -66,10 +68,11 @@ public class FlowTest extends Neo4jTest {
         assertEquals(1, relationships.size());
         assertEquals("plam", relationships.get(0).getEndNode().getProperty("name"));
     }
+
     @Test
     public void shouldCreateMultipleIndexes() {
         Fields sourceFields = new Fields("name", "nationality", "relationship");
-        flowNodes("Users", "src/test/resources/names_and_nationality.csv", sourceFields, sourceFields, new IndexSpec("users", sourceFields));
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", sourceFields, sourceFields, new IndexSpec("users", sourceFields), getNeo4jService());
 
         IndexHits<Node> nodes = neo4j.indexForNodes("users").get("nationality", "british");
         assertEquals(2, nodes.size());
@@ -84,11 +87,11 @@ public class FlowTest extends Neo4jTest {
     @Test
     public void shouldCreateRelationshipsBetweenDifferentNodeTypes() {
         Fields nameFields = new Fields("name");
-        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, new IndexSpec("users", nameFields));
-        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, new IndexSpec("nationalities", nameFields));
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, new IndexSpec("users", nameFields), getNeo4jService());
+        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, new IndexSpec("nationalities", nameFields), getNeo4jService());
         IndexSpec fromIndexSpec = new IndexSpec("users", nameFields);
         IndexSpec toIndexSpec = new IndexSpec("nationalities", nameFields);
-        flowRelations("Relations", "src/test/resources/names_and_nationality.csv", new Fields("person", "country", "relationship"), fromIndexSpec, toIndexSpec);
+        flowRelations("Relations", "src/test/resources/names_and_nationality.csv", new Fields("person", "country", "relationship"), fromIndexSpec, toIndexSpec, getNeo4jService());
 
         IndexHits<Node> britishNodes = neo4j.indexForNodes("nationalities").get("name", "british");
         Node britishNode = britishNodes.getSingle();
@@ -105,11 +108,11 @@ public class FlowTest extends Neo4jTest {
     @Test
     public void shouldCreateDirectionalRelationships() {
         Fields nameFields = new Fields("name");
-        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, new IndexSpec("users", nameFields));
-        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, new IndexSpec("nationalities", nameFields));
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, new IndexSpec("users", nameFields), getNeo4jService());
+        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, new IndexSpec("nationalities", nameFields), getNeo4jService());
         IndexSpec fromIndexSpec = new IndexSpec("users", nameFields);
         IndexSpec toIndexSpec = new IndexSpec("nationalities", nameFields);
-        flowRelations("Relations", "src/test/resources/names_and_nationality.csv", new Fields("person", "country", "relationship"), fromIndexSpec, toIndexSpec);
+        flowRelations("Relations", "src/test/resources/names_and_nationality.csv", new Fields("person", "country", "relationship"), fromIndexSpec, toIndexSpec, getNeo4jService());
 
         Node plamNode = neo4j.indexForNodes("users").get("name", "plam").getSingle();
 
@@ -123,11 +126,11 @@ public class FlowTest extends Neo4jTest {
         IndexSpec userIndex = new IndexSpec("users", nameFields);
         IndexSpec nationIndex = new IndexSpec("nationalities", nameFields);
 
-        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, userIndex);
-        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, nationIndex);
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, userIndex, getNeo4jService());
+        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, nationIndex, getNeo4jService());
 
         Fields relationshipFields = new Fields("person", "country", "relationship", "yearsofcitizenship", "passportexpiring");
-        flowRelations("Relations", "src/test/resources/names_nations_and_more.csv", relationshipFields, userIndex, nationIndex);
+        flowRelations("Relations", "src/test/resources/names_nations_and_more.csv", relationshipFields, userIndex, nationIndex, getNeo4jService());
 
         Node plam = neo4j.indexForNodes("users").get("name", "plam").getSingle();
         Relationship citizenship = toList(plam.getRelationships()).get(0);
@@ -136,39 +139,7 @@ public class FlowTest extends Neo4jTest {
         assertEquals("1", citizenship.getProperty("passportexpiring"));
     }
 
-    private void flowRelations(String name, String filename, Fields sourceFields, IndexSpec indexspec) {
-        flowRelations(name, filename, sourceFields, indexspec, indexspec);
-    }
-
-    private void flowRelations(String name, String filename, Fields sourceFields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
-        Tap relationshipSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
-        Tap relationshipSinkTap = new Neo4jTap(new Neo4jRelationshipScheme(this.neo4j.getService(), sourceFields, fromIndexSpec, toIndexSpec));
-        flowThroughPipe(name, sourceFields, relationshipSourceTap, relationshipSinkTap);
-    }
-
-    private void flowNodes(String name, String filename, Fields sourceFields, Fields outFields) {
-        Tap nodeSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
-        Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(neo4j.getService()));
-        flowThroughPipe(name, outFields, nodeSourceTap, nodeSinkTap);
-    }
-
-    private void flowNodes(String name, String filename, Fields sourceFields, Fields outFields, IndexSpec indexSpec) {
-        Tap nodeSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
-        Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(neo4j.getService(), indexSpec));
-        flowThroughPipe(name, outFields, nodeSourceTap, nodeSinkTap);
-    }
-
-    private void flowThroughPipe(String name, Fields outFields, Tap nodeSourceTap, Tap nodeSinkTap) {
-        Pipe nodePipe = new Each(name, outFields, new Identity());
-        Flow nodeFlow = localPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
-        nodeFlow.complete();
-    }
-
-    static <T> List<T> toList(Iterable<T> c) {
-        List<T> list = new ArrayList<T>();
-        for (T o : c) {
-            list.add(o);
-        }
-        return list;
+    public GraphDatabaseService getNeo4jService() {
+        return neo4j.getService();
     }
 }
