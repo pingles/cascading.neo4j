@@ -6,9 +6,8 @@ Current build status: [![Build Status](https://secure.travis-ci.org/pingles/casc
 
 ## TODO
 
-* Allow relations between nodes from difference Indexes
-* Ensure scheme can connect to remote Neo server
 * Ensure relations fields are of the form: from-key, to-key, relationship-label
+* Allow relationships to carry properties (from, to, label, prop ...)
+* Ensure scheme can connect to remote Neo server
 * Specify field names when persisting properties on Nodes. Will be useful given Cascalog prefixes with ? and !
-* Allow relationships to carry properties
 
