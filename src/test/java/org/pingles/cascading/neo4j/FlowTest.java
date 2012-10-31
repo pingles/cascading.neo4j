@@ -59,10 +59,10 @@ public class FlowTest extends Neo4jTest {
     @Test
     public void shouldCreateRelationshipsBetweenNodes() {
         LocalPlatform platform = new LocalPlatform();
+        Fields nodeIndexFields = new Fields("name");
 
         // import the nodes
         Tap nodeSourceTap = platform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
-        Fields nodeIndexFields = new Fields("name");
         Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", nodeIndexFields)));
         Pipe nodePipe = new Each("Names", new Fields("name"), new Identity());
         Flow nodeFlow = platform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
@@ -84,11 +84,33 @@ public class FlowTest extends Neo4jTest {
         assertEquals("plam", relationships.get(0).getEndNode().getProperty("name"));
     }
 
-    private List<Relationship> toList(Iterable<Relationship> rels) {
-        List<Relationship> res = new ArrayList<Relationship>();
-        for (Relationship rel : rels) {
-            res.add(rel);
+    @Test
+    public void shouldCreateMultipleIndexes() {
+        LocalPlatform platform = new LocalPlatform();
+        Fields sourceFields = new Fields("name", "nationality");
+
+        Tap sourceTap = platform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
+
+        Tap sinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", sourceFields)));
+        Pipe pipe = new Each("Names", sourceFields, new Identity());
+        Flow flow = platform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
+        flow.complete();
+
+        IndexHits<Node> nodes = neo4j.indexForNodes("users").get("nationality", "british");
+        assertEquals(2, nodes.size());
+
+        List<Node> nodeList = toList(nodes);
+        assertEquals("pingles", nodeList.get(0).getProperty("name"));
+        assertEquals("british", nodeList.get(0).getProperty("nationality"));
+        assertEquals("angrymike", nodeList.get(1).getProperty("name"));
+        assertEquals("british", nodeList.get(1).getProperty("nationality"));
+    }
+
+    static <T> List<T> toList(Iterable<T> c) {
+        List<T> list = new ArrayList<T>();
+        for (T o : c) {
+            list.add(o);
         }
-        return res;
+        return list;
     }
 }

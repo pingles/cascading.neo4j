@@ -67,8 +67,10 @@ public class Neo4jNodeScheme extends Scheme {
             }
 
             if (index != null) {
-                String indexPropertyName = indexSpec.getIndexPropertyName();
-                index.add(node, indexPropertyName, node.getProperty(indexPropertyName));
+                Fields indexProperties = indexSpec.getIndexProperties();
+                for (Comparable propName : indexProperties) {
+                    index.add(node, propName.toString(), outgoingEntry.getObject(propName));
+                }
             }
 
             transaction.success();

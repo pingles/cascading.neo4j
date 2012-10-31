@@ -20,7 +20,11 @@ public class IndexSpec {
         return indexName;
     }
 
-    public String getIndexPropertyName() {
-        return (String) fields.get(0);
+    public Fields getIndexProperties() {
+        return fields;
+    }
+
+    public String getFirstIndexPropertyName() {
+        return fields.get(0).toString();
     }
 }

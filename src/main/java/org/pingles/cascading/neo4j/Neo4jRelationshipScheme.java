@@ -49,8 +49,8 @@ public class Neo4jRelationshipScheme extends Scheme {
 
         Index<Node> index = service.index().forNodes(indexSpec.getNodeTypeName());
 
-        Node node1 = index.get(indexSpec.getIndexPropertyName(), node1Key).getSingle();
-        Node node2 = index.get(indexSpec.getIndexPropertyName(), node2Key).getSingle();
+        Node node1 = index.get(indexSpec.getFirstIndexPropertyName(), node1Key).getSingle();
+        Node node2 = index.get(indexSpec.getFirstIndexPropertyName(), node2Key).getSingle();
 
         if (node1 != null && node2 != null) {
             Transaction tx = service.beginTx();
