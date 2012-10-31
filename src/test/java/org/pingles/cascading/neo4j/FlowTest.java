@@ -54,6 +54,7 @@ public class FlowTest extends Neo4jTest {
         Node pinglesNode = nodes.getSingle();
         assertEquals("pingles", pinglesNode.getProperty("name"));
     }
+
     @Test
     public void shouldCreateRelationshipsBetweenNodes() {
         Fields userFields = new Fields("name");

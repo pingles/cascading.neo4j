@@ -3,7 +3,6 @@ package org.pingles.cascading.neo4j;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

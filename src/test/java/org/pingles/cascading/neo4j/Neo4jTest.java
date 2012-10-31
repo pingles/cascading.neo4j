@@ -10,7 +10,6 @@ import cascading.tuple.Fields;
 import org.junit.After;
 import org.junit.Before;
 import org.neo4j.graphdb.GraphDatabaseService;
-
 import java.util.ArrayList;
 import java.util.List;
 
