@@ -7,6 +7,8 @@ import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -15,22 +17,28 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.IndexHits;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static junit.framework.Assert.*;
 
 @RunWith(JUnit4.class)
 public class FlowTest extends Neo4jTest {
+
+    private LocalPlatform localPlatform;
+
+    @Before
+    public void initializePlatform() {
+        localPlatform = new LocalPlatform();
+    }
+
     @Test
     public void shouldSinkContentsToNeo() {
-        LocalPlatform platform = new LocalPlatform();
-        Tap sourceTap = platform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
+        Tap sourceTap = localPlatform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
 
         Tap sinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService()));
         Pipe pipe = new Each("Names", new Fields("name"), new Identity());
 
-        Flow flow = platform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
+        Flow flow = localPlatform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
         flow.complete();
 
         assertEquals("pingles", neo4j.getNode(1).getProperty("name"));
@@ -39,14 +47,13 @@ public class FlowTest extends Neo4jTest {
 
     @Test
     public void shouldCreateNodesAndIndexOnSpecifiedField() {
-        LocalPlatform platform = new LocalPlatform();
-        Tap sourceTap = platform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
+        Tap sourceTap = localPlatform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
 
         Fields indexFields = new Fields("name");
         Tap sinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", indexFields)));
         Pipe pipe = new Each("Names", new Fields("name"), new Identity());
 
-        Flow flow = platform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
+        Flow flow = localPlatform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
         flow.complete();
 
         IndexHits<Node> nodes = neo4j.indexForNodes("users").get("name", "pingles");
@@ -58,21 +65,20 @@ public class FlowTest extends Neo4jTest {
 
     @Test
     public void shouldCreateRelationshipsBetweenNodes() {
-        LocalPlatform platform = new LocalPlatform();
         Fields nodeIndexFields = new Fields("name");
 
         // import the nodes
-        Tap nodeSourceTap = platform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
+        Tap nodeSourceTap = localPlatform.getTextFile(new Fields("name"), "src/test/resources/names.csv");
         Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", nodeIndexFields)));
         Pipe nodePipe = new Each("Names", new Fields("name"), new Identity());
-        Flow nodeFlow = platform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
+        Flow nodeFlow = localPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
         nodeFlow.complete();
 
         // import relationships between previously inserted nodes
-        Tap relationshipSourceTap = platform.getDelimitedFile(new Fields("from", "to", "relationshipType"), ",", "src/test/resources/relations.csv");
+        Tap relationshipSourceTap = localPlatform.getDelimitedFile(new Fields("from", "to", "relationshipType"), ",", "src/test/resources/relations.csv");
         Tap relationshipSinkTap = new Neo4jTap(new Neo4jRelationshipScheme(this.neo4j.getService(), new IndexSpec("users", nodeIndexFields)));
         Pipe relPipe = new Each("Relations", new Fields("from", "to", "relationshipType"), new Identity());
-        Flow relFlow = platform.getFlowConnector().connect(relationshipSourceTap, relationshipSinkTap, relPipe);
+        Flow relFlow = localPlatform.getFlowConnector().connect(relationshipSourceTap, relationshipSinkTap, relPipe);
         relFlow.complete();
 
         // lookup one of the nodes and check the association
@@ -86,14 +92,13 @@ public class FlowTest extends Neo4jTest {
 
     @Test
     public void shouldCreateMultipleIndexes() {
-        LocalPlatform platform = new LocalPlatform();
-        Fields sourceFields = new Fields("name", "nationality");
+        Fields sourceFields = new Fields("name", "nationality", "relationship");
 
-        Tap sourceTap = platform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
+        Tap sourceTap = localPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
 
         Tap sinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", sourceFields)));
         Pipe pipe = new Each("Names", sourceFields, new Identity());
-        Flow flow = platform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
+        Flow flow = localPlatform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
         flow.complete();
 
         IndexHits<Node> nodes = neo4j.indexForNodes("users").get("nationality", "british");
@@ -104,6 +109,47 @@ public class FlowTest extends Neo4jTest {
         assertEquals("british", nodeList.get(0).getProperty("nationality"));
         assertEquals("angrymike", nodeList.get(1).getProperty("name"));
         assertEquals("british", nodeList.get(1).getProperty("nationality"));
+    }
+
+    @Test
+    public void shouldCreateRelationshipsBetweenDifferentNodeTypes() {
+        Fields usersSourceFields = new Fields("name", "nationality");
+        Fields usersOutFields = new Fields("name");
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", usersSourceFields, usersOutFields, new IndexSpec("users", usersOutFields));
+
+        Fields nationalitiesFields = new Fields("name");
+        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nationalitiesFields, nationalitiesFields, new IndexSpec("nationalities", nationalitiesFields));
+
+        IndexSpec fromIndexSpec = new IndexSpec("users", new Fields("name"));
+        IndexSpec toIndexSpec = new IndexSpec("nationalities", new Fields("name"));
+        flowRelations("Relations", "src/test/resources/names_and_nationality.csv", new Fields("person", "country", "relationship"), fromIndexSpec, toIndexSpec);
+
+        IndexHits<Node> britishNodes = neo4j.indexForNodes("nationalities").get("name", "british");
+        Node britishNode = britishNodes.getSingle();
+        assertEquals(2, toList(britishNode.getRelationships()).size());
+
+        Node plamNode = neo4j.indexForNodes("users").get("name", "plam").getSingle();
+        assertNotNull(plamNode);
+        assertEquals("plam", plamNode.getProperty("name"));
+        List<Relationship> relationships = toList(plamNode.getRelationships());
+        assertEquals(1, relationships.size());
+        assertEquals("NATIONALITY", relationships.get(0).getType().name());
+    }
+
+    private void flowRelations(String name, String filename, Fields sourceFields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
+        Tap relationshipSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
+        Tap relationshipSinkTap = new Neo4jTap(new Neo4jRelationshipScheme(this.neo4j.getService(), fromIndexSpec, toIndexSpec));
+        Pipe relPipe = new Each(name, sourceFields, new Identity());
+        Flow relFlow = localPlatform.getFlowConnector().connect(relationshipSourceTap, relationshipSinkTap, relPipe);
+        relFlow.complete();
+    }
+
+    private void flowNodes(String name, String filename, Fields sourceFields, Fields outFields, IndexSpec indexSpec) {
+        Tap nodeSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
+        Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(neo4j.getService(), indexSpec));
+        Pipe nodePipe = new Each(name, outFields, new Identity());
+        Flow nodeFlow = localPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
+        nodeFlow.complete();
     }
 
     static <T> List<T> toList(Iterable<T> c) {
