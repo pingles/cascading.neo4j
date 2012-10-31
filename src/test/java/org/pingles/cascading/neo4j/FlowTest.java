@@ -12,6 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.IndexHits;
@@ -134,6 +135,21 @@ public class FlowTest extends Neo4jTest {
         List<Relationship> relationships = toList(plamNode.getRelationships());
         assertEquals(1, relationships.size());
         assertEquals("NATIONALITY", relationships.get(0).getType().name());
+    }
+
+    @Test
+    public void shouldCreateDirectionalRelationships() {
+        Fields nameFields = new Fields("name");
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, new IndexSpec("users", nameFields));
+        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, new IndexSpec("nationalities", nameFields));
+        IndexSpec fromIndexSpec = new IndexSpec("users", nameFields);
+        IndexSpec toIndexSpec = new IndexSpec("nationalities", nameFields);
+        flowRelations("Relations", "src/test/resources/names_and_nationality.csv", new Fields("person", "country", "relationship"), fromIndexSpec, toIndexSpec);
+
+        Node plamNode = neo4j.indexForNodes("users").get("name", "plam").getSingle();
+
+        assertEquals(0, toList(plamNode.getRelationships(Direction.INCOMING)).size());
+        assertEquals(1, toList(plamNode.getRelationships(Direction.OUTGOING)).size());
     }
 
     private void flowRelations(String name, String filename, Fields sourceFields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
