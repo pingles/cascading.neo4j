@@ -94,13 +94,7 @@ public class FlowTest extends Neo4jTest {
     @Test
     public void shouldCreateMultipleIndexes() {
         Fields sourceFields = new Fields("name", "nationality", "relationship");
-
-        Tap sourceTap = localPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
-
-        Tap sinkTap = new Neo4jTap(new Neo4jNodeScheme(this.neo4j.getService(), new IndexSpec("users", sourceFields)));
-        Pipe pipe = new Each("Names", sourceFields, new Identity());
-        Flow flow = localPlatform.getFlowConnector().connect(sourceTap, sinkTap, pipe);
-        flow.complete();
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", sourceFields, sourceFields, new IndexSpec("users", sourceFields));
 
         IndexHits<Node> nodes = neo4j.indexForNodes("users").get("nationality", "british");
         assertEquals(2, nodes.size());
@@ -114,15 +108,11 @@ public class FlowTest extends Neo4jTest {
 
     @Test
     public void shouldCreateRelationshipsBetweenDifferentNodeTypes() {
-        Fields usersSourceFields = new Fields("name", "nationality");
-        Fields usersOutFields = new Fields("name");
-        flowNodes("Users", "src/test/resources/names_and_nationality.csv", usersSourceFields, usersOutFields, new IndexSpec("users", usersOutFields));
-
-        Fields nationalitiesFields = new Fields("name");
-        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nationalitiesFields, nationalitiesFields, new IndexSpec("nationalities", nationalitiesFields));
-
-        IndexSpec fromIndexSpec = new IndexSpec("users", new Fields("name"));
-        IndexSpec toIndexSpec = new IndexSpec("nationalities", new Fields("name"));
+        Fields nameFields = new Fields("name");
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, new IndexSpec("users", nameFields));
+        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, new IndexSpec("nationalities", nameFields));
+        IndexSpec fromIndexSpec = new IndexSpec("users", nameFields);
+        IndexSpec toIndexSpec = new IndexSpec("nationalities", nameFields);
         flowRelations("Relations", "src/test/resources/names_and_nationality.csv", new Fields("person", "country", "relationship"), fromIndexSpec, toIndexSpec);
 
         IndexHits<Node> britishNodes = neo4j.indexForNodes("nationalities").get("name", "british");
