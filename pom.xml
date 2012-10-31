@@ -22,16 +22,15 @@
         </dependency>
         <dependency>
             <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-rest-graphdb</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
             <artifactId>neo4j-kernel</artifactId>
             <version>1.8</version>
             <scope>test</scope>
             <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-rest-graphdb</artifactId>
-            <version>1.8</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.neo4j.app</groupId>

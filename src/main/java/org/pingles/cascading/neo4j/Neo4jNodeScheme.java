@@ -12,6 +12,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.rest.graphdb.RestGraphDatabase;
 
 import java.io.IOException;
 
@@ -27,8 +28,18 @@ public class Neo4jNodeScheme extends Scheme {
         this.service = service;
     }
 
+    public Neo4jNodeScheme(String restService) {
+        this.service = new RestGraphDatabase(restService);
+    }
+
     public Neo4jNodeScheme(GraphDatabaseService service, IndexSpec indexSpec) {
         this.service = service;
+        this.indexSpec = indexSpec;
+        index = service.index().forNodes(indexSpec.getNodeTypeName());
+    }
+
+    public Neo4jNodeScheme(String restService, IndexSpec indexSpec) {
+        this.service = new RestGraphDatabase(restService);
         this.indexSpec = indexSpec;
         index = service.index().forNodes(indexSpec.getNodeTypeName());
     }
