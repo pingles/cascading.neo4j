@@ -18,7 +18,7 @@ import java.util.List;
 import static junit.framework.Assert.*;
 
 @RunWith(JUnit4.class)
-public class FlowTest extends Neo4jTest {
+public class FlowTest extends Neo4jTestCase {
     protected EmbeddedNeo4jService neo4j;
 
     @Before
