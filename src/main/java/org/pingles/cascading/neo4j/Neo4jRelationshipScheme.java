@@ -6,6 +6,7 @@ import cascading.scheme.Scheme;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
 import cascading.tap.Tap;
+import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -18,13 +19,24 @@ public class Neo4jRelationshipScheme extends Scheme {
     private final GraphDatabaseService service;
     private final IndexSpec fromIndexSpec;
     private final IndexSpec toIndexSpec;
+    private final Fields fields;
 
-    public Neo4jRelationshipScheme(GraphDatabaseService service, IndexSpec indexSpec) {
-        this(service, indexSpec, indexSpec);
+    /**
+     * @param service
+     * @param fields The tuple field names to identify the from and to nodes, and describes their relationship.
+     * @param indexSpec
+     */
+    public Neo4jRelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec indexSpec) {
+        this(service, fields, indexSpec, indexSpec);
     }
 
-    public Neo4jRelationshipScheme(GraphDatabaseService service, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
+    public Neo4jRelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
+        if (fields.size() != 3) {
+            throw new IllegalArgumentException("fields should contain 3 field names. Example: from, to, and relationship type.");
+        }
+
         this.service = service;
+        this.fields = fields;
         this.fromIndexSpec = fromIndexSpec;
         this.toIndexSpec = toIndexSpec;
     }

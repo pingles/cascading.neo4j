@@ -8,7 +8,6 @@ import cascading.tap.Tap;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -67,7 +66,6 @@ public class FlowTest extends Neo4jTest {
         assertEquals(1, relationships.size());
         assertEquals("plam", relationships.get(0).getEndNode().getProperty("name"));
     }
-
     @Test
     public void shouldCreateMultipleIndexes() {
         Fields sourceFields = new Fields("name", "nationality", "relationship");
@@ -125,7 +123,7 @@ public class FlowTest extends Neo4jTest {
 
     private void flowRelations(String name, String filename, Fields sourceFields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
         Tap relationshipSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
-        Tap relationshipSinkTap = new Neo4jTap(new Neo4jRelationshipScheme(this.neo4j.getService(), fromIndexSpec, toIndexSpec));
+        Tap relationshipSinkTap = new Neo4jTap(new Neo4jRelationshipScheme(this.neo4j.getService(), sourceFields, fromIndexSpec, toIndexSpec));
         flowThroughPipe(name, sourceFields, relationshipSourceTap, relationshipSinkTap);
     }
 
