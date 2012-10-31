@@ -49,9 +49,9 @@ public class Neo4jRelationshipScheme extends Scheme {
         ConcreteCall call = (ConcreteCall) sinkCall;
         TupleEntry outgoingEntry = call.getOutgoingEntry();
 
-        Object node1Key = outgoingEntry.get(0);
-        Object node2Key = outgoingEntry.get(1);
-        String relationshipLabel = (String) outgoingEntry.get(2);
+        Object node1Key = outgoingEntry.getObject(0);
+        Object node2Key = outgoingEntry.getObject(1);
+        String relationshipLabel = outgoingEntry.getString(2);
 
         Index<Node> fromIndex = service.index().forNodes(fromIndexSpec.getNodeTypeName());
         Index<Node> toIndex = service.index().forNodes(toIndexSpec.getNodeTypeName());
