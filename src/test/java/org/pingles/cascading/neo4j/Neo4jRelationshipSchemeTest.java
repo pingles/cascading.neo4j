@@ -34,6 +34,15 @@ public class Neo4jRelationshipSchemeTest {
         }
     }
 
+    @Test
+    public void shouldAllowMoreThan3Fields() {
+        try {
+            new Neo4jRelationshipScheme(stubService(), new Fields("fromName", "toName", "relationshipLabel", "property1", "property2"), new IndexSpec("users", new Fields()));
+        } catch (IllegalArgumentException e) {
+            fail(e.getMessage());
+        }
+    }
+
     public GraphDatabaseService stubService() {
         return new GraphDatabaseService() {
             public Node createNode() {

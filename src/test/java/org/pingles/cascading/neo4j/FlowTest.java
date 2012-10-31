@@ -117,6 +117,25 @@ public class FlowTest extends Neo4jTest {
         assertEquals(1, toList(plamNode.getRelationships(Direction.OUTGOING)).size());
     }
 
+    @Test
+    public void shouldCreateRelationshipsWithProperties() {
+        Fields nameFields = new Fields("name");
+        IndexSpec userIndex = new IndexSpec("users", nameFields);
+        IndexSpec nationIndex = new IndexSpec("nationalities", nameFields);
+
+        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, userIndex);
+        flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, nationIndex);
+
+        Fields relationshipFields = new Fields("person", "country", "relationship", "yearsofcitizenship", "passportexpiring");
+        flowRelations("Relations", "src/test/resources/names_nations_and_more.csv", relationshipFields, userIndex, nationIndex);
+
+        Node plam = neo4j.indexForNodes("users").get("name", "plam").getSingle();
+        Relationship citizenship = toList(plam.getRelationships()).get(0);
+
+        assertEquals("31", citizenship.getProperty("yearsofcitizenship"));
+        assertEquals("1", citizenship.getProperty("passportexpiring"));
+    }
+
     private void flowRelations(String name, String filename, Fields sourceFields, IndexSpec indexspec) {
         flowRelations(name, filename, sourceFields, indexspec, indexspec);
     }

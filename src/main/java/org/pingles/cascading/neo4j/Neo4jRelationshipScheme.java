@@ -10,6 +10,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
@@ -24,6 +25,7 @@ public class Neo4jRelationshipScheme extends Scheme {
     /**
      * @param service
      * @param fields The tuple field names to identify the from and to nodes, and describes their relationship.
+     *               Additional values will be used to store properties on the relationship.
      * @param indexSpec
      */
     public Neo4jRelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec indexSpec) {
@@ -31,8 +33,8 @@ public class Neo4jRelationshipScheme extends Scheme {
     }
 
     public Neo4jRelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
-        if (fields.size() != 3) {
-            throw new IllegalArgumentException("fields should contain 3 field names. Example: from, to, and relationship type.");
+        if (fields.size() < 3) {
+            throw new IllegalArgumentException("fields should contain at least 3 field names. Example: from, to, and relationship type.");
         }
 
         this.service = service;
@@ -74,7 +76,16 @@ public class Neo4jRelationshipScheme extends Scheme {
         if (fromNode != null && toNode != null) {
             Transaction tx = service.beginTx();
             try {
-                fromNode.createRelationshipTo(toNode, new StringRelationshipType(relationshipLabel));
+                Relationship relationship = fromNode.createRelationshipTo(toNode, new StringRelationshipType(relationshipLabel));
+
+                if (outgoingEntry.size() > 3) {
+                    for (int i = 3; i < outgoingEntry.size(); i++) {
+                        String propertyName = (String) outgoingEntry.getFields().get(i);
+                        Object propertyValue = outgoingEntry.getObject(i);
+                        relationship.setProperty(propertyName, propertyValue);
+                    }
+                }
+
                 tx.success();
             } finally {
                 tx.finish();
