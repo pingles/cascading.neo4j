@@ -1,4 +1,4 @@
-package org.pingles.cascading.neo4j;
+package org.pingles.cascading.neo4j.local;
 
 import cascading.flow.Flow;
 import cascading.operation.Identity;
@@ -8,6 +8,11 @@ import cascading.tap.Tap;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.pingles.cascading.neo4j.IndexSpec;
+import org.pingles.cascading.neo4j.local.Neo4jNodeScheme;
+import org.pingles.cascading.neo4j.local.Neo4jRelationshipScheme;
+import org.pingles.cascading.neo4j.local.Neo4jTap;
+
 import java.util.ArrayList;
 import java.util.List;
 

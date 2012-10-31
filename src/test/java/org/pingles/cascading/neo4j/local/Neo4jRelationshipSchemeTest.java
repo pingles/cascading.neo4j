@@ -1,9 +1,12 @@
-package org.pingles.cascading.neo4j;
+package org.pingles.cascading.neo4j.local;
 
 import cascading.tuple.Fields;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.pingles.cascading.neo4j.IndexSpec;
+import org.pingles.cascading.neo4j.local.Neo4jRelationshipScheme;
+
 import static junit.framework.Assert.*;
 
 @RunWith(JUnit4.class)

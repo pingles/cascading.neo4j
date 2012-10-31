@@ -1,4 +1,4 @@
-package org.pingles.cascading.neo4j;
+package org.pingles.cascading.neo4j.local;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;

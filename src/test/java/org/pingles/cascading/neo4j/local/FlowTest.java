@@ -1,4 +1,4 @@
-package org.pingles.cascading.neo4j;
+package org.pingles.cascading.neo4j.local;
 
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
@@ -12,6 +12,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.IndexHits;
+import org.pingles.cascading.neo4j.IndexSpec;
 
 import java.util.List;
 

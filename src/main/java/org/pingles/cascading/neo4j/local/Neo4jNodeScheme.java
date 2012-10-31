@@ -1,4 +1,4 @@
-package org.pingles.cascading.neo4j;
+package org.pingles.cascading.neo4j.local;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.ConcreteCall;
@@ -13,6 +13,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.rest.graphdb.RestGraphDatabase;
+import org.pingles.cascading.neo4j.IndexSpec;
 
 import java.io.IOException;
 

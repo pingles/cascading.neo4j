@@ -1,4 +1,4 @@
-package org.pingles.cascading.neo4j;
+package org.pingles.cascading.neo4j.local;
 
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
@@ -15,6 +15,7 @@ import org.neo4j.rest.graphdb.RestGraphDatabase;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.server.configuration.Configurator;
 import org.neo4j.server.configuration.ServerConfigurator;
+import org.pingles.cascading.neo4j.local.Neo4jTestCase;
 
 import java.io.File;
 import java.io.IOException;
