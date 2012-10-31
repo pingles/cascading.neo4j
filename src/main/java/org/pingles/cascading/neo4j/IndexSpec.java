@@ -1,8 +1,9 @@
 package org.pingles.cascading.neo4j;
 
 import cascading.tuple.Fields;
+import java.io.Serializable;
 
-public class IndexSpec {
+public class IndexSpec implements Serializable {
     private final String indexName;
     private final Fields fields;
 

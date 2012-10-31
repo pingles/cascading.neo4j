@@ -2,46 +2,27 @@ package org.pingles.cascading.neo4j;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.ConcreteCall;
-import cascading.scheme.Scheme;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.rest.graphdb.RestGraphDatabase;
 
 import java.io.IOException;
 
 /**
  * Allows the client to sink Nodes in the Neo4j database.
  */
-public class Neo4jNodeScheme extends Scheme {
-    private GraphDatabaseService service;
+public class Neo4jNodeScheme extends Neo4jScheme {
     private IndexSpec indexSpec;
-    private Index<Node> index;
 
-    public Neo4jNodeScheme(GraphDatabaseService service) {
-        this.service = service;
+    public Neo4jNodeScheme() {
     }
 
-    public Neo4jNodeScheme(String restService) {
-        this.service = new RestGraphDatabase(restService);
-    }
-
-    public Neo4jNodeScheme(GraphDatabaseService service, IndexSpec indexSpec) {
-        this.service = service;
+    public Neo4jNodeScheme(IndexSpec indexSpec) {
         this.indexSpec = indexSpec;
-        index = service.index().forNodes(indexSpec.getNodeTypeName());
-    }
-
-    public Neo4jNodeScheme(String restService, IndexSpec indexSpec) {
-        this.service = new RestGraphDatabase(restService);
-        this.indexSpec = indexSpec;
-        index = service.index().forNodes(indexSpec.getNodeTypeName());
     }
 
     @Override
@@ -64,9 +45,9 @@ public class Neo4jNodeScheme extends Scheme {
         ConcreteCall call = (ConcreteCall) sinkCall;
         TupleEntry outgoingEntry = call.getOutgoingEntry();
 
-        Transaction transaction = service.beginTx();
+        Transaction transaction = getNeo4jCollector().beginTransaction();
         try {
-            Node node = service.createNode();
+            Node node = getNeo4jCollector().createNode();
 
             Fields fields = outgoingEntry.getFields();
 
@@ -77,10 +58,10 @@ public class Neo4jNodeScheme extends Scheme {
                 node.setProperty(fieldName, fieldValue);
             }
 
-            if (index != null) {
+            if (indexSpec != null) {
                 Fields indexProperties = indexSpec.getIndexProperties();
                 for (Comparable propName : indexProperties) {
-                    index.add(node, propName.toString(), outgoingEntry.getObject(propName));
+                    getNeo4jCollector().addIndex(indexSpec.getNodeTypeName(), propName.toString(), outgoingEntry.getObject(propName), node);
                 }
             }
 
@@ -88,5 +69,19 @@ public class Neo4jNodeScheme extends Scheme {
         } finally {
             transaction.finish();
         }
+    }
+
+
+    // These are the contract we have with some persistence store
+    private void addIndex(Node node, String propertyName, Object propertyValue) {
+        // index = service.index().forNodes(indexSpec.getNodeTypeName());
+    }
+
+    private Node createNode() {
+        return null;
+    }
+
+    private Transaction beginTransaction() {
+        return null;
     }
 }

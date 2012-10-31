@@ -16,7 +16,7 @@ import org.neo4j.graphdb.index.Index;
 
 import java.io.IOException;
 
-public class Neo4jRelationshipScheme extends Scheme {
+public class Neo4jRelationshipScheme extends Neo4jScheme {
     private final GraphDatabaseService service;
     private final IndexSpec fromIndexSpec;
     private final IndexSpec toIndexSpec;

@@ -7,14 +7,17 @@ import cascading.tap.Tap;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
 import cascading.tuple.TupleEntrySchemeCollector;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 import java.io.IOException;
 
 public class Neo4jTap extends Tap {
-    private final Scheme neo4jScheme;
+    private final GraphDatabaseService graphDatabaseService;
+    private final Neo4jScheme neo4jScheme;
 
-    public Neo4jTap(Scheme scheme) {
+    public Neo4jTap(GraphDatabaseService graphDatabaseService, Neo4jScheme scheme) {
         super(scheme, SinkMode.REPLACE);
+        this.graphDatabaseService = graphDatabaseService;
         this.neo4jScheme = scheme;
     }
 
@@ -30,7 +33,9 @@ public class Neo4jTap extends Tap {
 
     @Override
     public TupleEntryCollector openForWrite(FlowProcess flowProcess, Object o) throws IOException {
-        return new TupleEntrySchemeCollector(flowProcess, neo4jScheme);
+        EmbeddedNeo4jServiceCollector collector = new EmbeddedNeo4jServiceCollector(flowProcess, graphDatabaseService, neo4jScheme);
+        return collector;
+        //return new TupleEntrySchemeCollector(flowProcess, neo4jScheme);
     }
 
     @Override

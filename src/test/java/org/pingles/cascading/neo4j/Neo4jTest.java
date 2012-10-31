@@ -7,8 +7,6 @@ import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
-import org.junit.After;
-import org.junit.Before;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 import java.util.ArrayList;
@@ -31,19 +29,19 @@ public class Neo4jTest {
 
     protected void flowRelations(String name, String filename, Fields sourceFields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec, GraphDatabaseService graphDatabaseService) {
         Tap relationshipSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
-        Tap relationshipSinkTap = new Neo4jTap(new Neo4jRelationshipScheme(graphDatabaseService, sourceFields, fromIndexSpec, toIndexSpec));
+        Tap relationshipSinkTap = new Neo4jTap(graphDatabaseService, new Neo4jRelationshipScheme(graphDatabaseService, sourceFields, fromIndexSpec, toIndexSpec));
         flowThroughPipe(name, sourceFields, relationshipSourceTap, relationshipSinkTap);
     }
 
     protected void flowNodes(String name, String filename, Fields sourceFields, Fields outFields, GraphDatabaseService graphDatabaseService) {
         Tap nodeSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
-        Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(graphDatabaseService));
+        Tap nodeSinkTap = new Neo4jTap(graphDatabaseService, new Neo4jNodeScheme());
         flowThroughPipe(name, outFields, nodeSourceTap, nodeSinkTap);
     }
 
     protected void flowNodes(String name, String filename, Fields sourceFields, Fields outFields, IndexSpec indexSpec, GraphDatabaseService graphDatabaseService) {
         Tap nodeSourceTap = localPlatform.getDelimitedFile(sourceFields, ",", filename);
-        Tap nodeSinkTap = new Neo4jTap(new Neo4jNodeScheme(graphDatabaseService, indexSpec));
+        Tap nodeSinkTap = new Neo4jTap(graphDatabaseService, new Neo4jNodeScheme(indexSpec));
         flowThroughPipe(name, outFields, nodeSourceTap, nodeSinkTap);
     }
 
