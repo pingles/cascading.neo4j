@@ -32,6 +32,8 @@ public class Neo4jRelationshipSchemeTest {
 
     @Test
     public void shouldAllowMoreThan3Fields() {
+        // if we pass more than 3 fields, anything to the right will be added
+        // as a property of the relationship.
         try {
             new Neo4jRelationshipScheme(null, new Fields("fromName", "toName", "relationshipLabel", "property1", "property2"), new IndexSpec("users", new Fields()));
         } catch (IllegalArgumentException e) {

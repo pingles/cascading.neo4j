@@ -11,7 +11,7 @@ import org.neo4j.graphdb.Transaction;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
-public class EmbeddedNeo4jServiceTest extends Neo4jTest {
+public class EmbeddedNeo4jServiceTest extends Neo4jTestCase {
 
     protected EmbeddedNeo4jService neo4j;
 

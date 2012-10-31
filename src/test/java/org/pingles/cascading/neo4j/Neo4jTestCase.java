@@ -7,14 +7,11 @@ import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
-import org.junit.After;
-import org.junit.Before;
 import org.neo4j.graphdb.GraphDatabaseService;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class Neo4jTest {
+public class Neo4jTestCase {
     protected LocalPlatform localPlatform;
 
     static <T> List<T> toList(Iterable<T> c) {

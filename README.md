@@ -6,6 +6,5 @@ Current build status: [![Build Status](https://secure.travis-ci.org/pingles/casc
 
 ## TODO
 
-* Ensure scheme can connect to remote Neo server
 * Specify field names when persisting properties on Nodes. Will be useful given Cascalog prefixes with ? and !
-
+* What to do WRT SinkMode.REPLACE etc.

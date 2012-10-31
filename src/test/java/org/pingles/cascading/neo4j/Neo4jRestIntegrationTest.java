@@ -3,7 +3,6 @@ package org.pingles.cascading.neo4j;
 import cascading.test.LocalPlatform;
 import cascading.tuple.Fields;
 import org.apache.commons.io.FileUtils;
-import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +22,7 @@ import java.io.IOException;
 import static junit.framework.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
-public class Neo4jRestIntegrationTest extends Neo4jTest {
+public class Neo4jRestIntegrationTest extends Neo4jTestCase {
     public static final String NEO4J_DB_DIR = "target/neo4jdb";
     private WrappingNeoServerBootstrapper server;
 
