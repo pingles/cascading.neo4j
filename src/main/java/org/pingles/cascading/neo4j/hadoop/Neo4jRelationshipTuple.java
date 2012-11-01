@@ -9,12 +9,12 @@ import org.neo4j.graphdb.index.Index;
 import org.pingles.cascading.neo4j.IndexSpec;
 import org.pingles.cascading.neo4j.StringRelationshipType;
 
-public class TupleRelationship implements Neo4jWritable {
+public class Neo4jRelationshipTuple extends Neo4jTuple implements Neo4jWritable {
     private final IndexSpec fromIndexSpec;
     private final IndexSpec toIndexSpec;
     private final TupleEntry tupleEntry;
 
-    public TupleRelationship(IndexSpec fromIndex, IndexSpec toIndex, TupleEntry tupleEntry) {
+    public Neo4jRelationshipTuple(IndexSpec fromIndex, IndexSpec toIndex, TupleEntry tupleEntry) {
         this.fromIndexSpec = fromIndex;
         this.toIndexSpec = toIndex;
         this.tupleEntry = tupleEntry;
@@ -28,8 +28,8 @@ public class TupleRelationship implements Neo4jWritable {
         Index<Node> fromIndex = service.index().forNodes(fromIndexSpec.getNodeTypeName());
         Index<Node> toIndex = service.index().forNodes(toIndexSpec.getNodeTypeName());
 
-        Node fromNode = fromIndex.get(fromIndexSpec.getFirstIndexPropertyName(), node1Key).getSingle();
-        Node toNode = toIndex.get(toIndexSpec.getFirstIndexPropertyName(), node2Key).getSingle();
+        Node fromNode = fromIndex.get(cleanPropertyName(fromIndexSpec.getFirstIndexPropertyName()), node1Key).getSingle();
+        Node toNode = toIndex.get(cleanPropertyName(toIndexSpec.getFirstIndexPropertyName()), node2Key).getSingle();
 
         Transaction transaction = service.beginTx();
         try {
@@ -39,7 +39,8 @@ public class TupleRelationship implements Neo4jWritable {
                 for (int i = 3; i < tupleEntry.size(); i++) {
                     String propertyName = (String) tupleEntry.getFields().get(i);
                     Object propertyValue = tupleEntry.getObject(i);
-                    relationship.setProperty(propertyName, propertyValue);
+
+                    relationship.setProperty(cleanPropertyName(propertyName), propertyValue);
                 }
             }
 

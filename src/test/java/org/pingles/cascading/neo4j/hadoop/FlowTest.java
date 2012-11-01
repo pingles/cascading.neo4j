@@ -132,6 +132,25 @@ public class FlowTest {
     }
 
     @Test
+    public void shouldCreateRelationshipsRemovingCascalogCharacterPrefixes() {
+        Fields nameField = new Fields("?name");
+        Fields relFields = new Fields("?name", "?nationality", "?relationship");
+
+        IndexSpec usersIndex = new IndexSpec("users", nameField);
+        IndexSpec nationsIndex = new IndexSpec("nations", nameField);
+
+        flowNodes(relFields, "src/test/resources/names_and_nationality.csv", usersIndex);
+        flowNodes(nameField, "src/test/resources/nationalities.csv", nationsIndex);
+        flowRelations(relFields, "src/test/resources/names_and_nationality.csv", usersIndex, nationsIndex);
+
+        Node pingles = neoService().index().forNodes("users").get("name", "pingles").getSingle();
+        List<Relationship> relationships = toList(pingles.getRelationships());
+        assertEquals(1, relationships.size());
+        assertEquals("british", relationships.get(0).getEndNode().getProperty("name"));
+        assertEquals("NATIONALITY", relationships.get(0).getType().name());
+    }
+
+    @Test
     public void shouldCreateRelationshipsWithAdditionalProperties() {
         Fields nameField = new Fields("name");
         Fields relFields = new Fields("name", "nationality", "relationship", "yearsofcitizenship", "passportexpiring");

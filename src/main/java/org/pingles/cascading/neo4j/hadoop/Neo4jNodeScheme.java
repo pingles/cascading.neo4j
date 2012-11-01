@@ -50,11 +50,11 @@ public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollect
         OutputCollector collector = (OutputCollector) sinkCall.getOutput();
         TupleEntry tuple = sinkCall.getOutgoingEntry();
 
-        TupleNeo4j node;
+        Neo4jNodeTuple node;
         if (indexSpec != null) {
-            node = new TupleNeo4j(getSourceFields(), tuple, indexSpec);
+            node = new Neo4jNodeTuple(getSourceFields(), tuple, indexSpec);
         } else {
-            node = new TupleNeo4j(getSourceFields(), tuple);
+            node = new Neo4jNodeTuple(getSourceFields(), tuple);
         }
 
         collector.collect(Tuple.NULL, node);

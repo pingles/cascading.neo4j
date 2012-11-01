@@ -8,16 +8,16 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.pingles.cascading.neo4j.IndexSpec;
 
-public class TupleNeo4j implements Neo4jWritable {
+public class Neo4jNodeTuple extends Neo4jTuple implements Neo4jWritable {
     private final TupleEntry tupleEntry;
     private IndexSpec indexSpec;
     private Fields sinkFields;
 
-    public TupleNeo4j(Fields sinkFields, TupleEntry tupleEntry) {
+    public Neo4jNodeTuple(Fields sinkFields, TupleEntry tupleEntry) {
         this(sinkFields, tupleEntry, null);
     }
 
-    public TupleNeo4j(Fields sinkFields, TupleEntry tupleEntry, IndexSpec indexSpec) {
+    public Neo4jNodeTuple(Fields sinkFields, TupleEntry tupleEntry, IndexSpec indexSpec) {
         this.tupleEntry = tupleEntry;
         this.indexSpec = indexSpec;
         this.sinkFields = sinkFields;
@@ -34,7 +34,7 @@ public class TupleNeo4j implements Neo4jWritable {
                 String fieldName = (String) fields.get(idx);
                 Object fieldValue = tupleEntry.getTuple().getObject(idx);
 
-                node.setProperty(cleanFieldName(fieldName), fieldValue);
+                node.setProperty(cleanPropertyName(fieldName), fieldValue);
             }
 
             if (indexSpec != null) {
@@ -42,7 +42,7 @@ public class TupleNeo4j implements Neo4jWritable {
 
                 Fields indexProperties = indexSpec.getIndexProperties();
                 for (Comparable propName : indexProperties) {
-                    index.add(node, propName.toString(), tupleEntry.getObject(propName));
+                    index.add(node, cleanPropertyName(propName.toString()), tupleEntry.getObject(propName));
                 }
             }
 
@@ -52,17 +52,4 @@ public class TupleNeo4j implements Neo4jWritable {
         }
     }
 
-    // Neo4j doesn't seem to like persisting properties that start with a question mark
-    // (which happens when sinking data from Cascalog). For now, just strip any preceding
-    // question marks
-    private String cleanFieldName(String fieldName) {
-        if (startsWithCascalogCharacter(fieldName)) {
-            return cleanFieldName(fieldName.substring(1));
-        }
-        return fieldName;
-    }
-
-    private boolean startsWithCascalogCharacter(String val) {
-        return val.startsWith("?") || val.startsWith("!");
-    }
 }

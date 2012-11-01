@@ -48,7 +48,7 @@ public class Neo4jRelationshipScheme  extends Scheme<JobConf, RecordReader, Outp
         OutputCollector collector = sinkCall.getOutput();
         TupleEntry outgoingEntry = sinkCall.getOutgoingEntry();
 
-        TupleRelationship rel = new TupleRelationship(fromIndex, toIndex, outgoingEntry);
+        Neo4jRelationshipTuple rel = new Neo4jRelationshipTuple(fromIndex, toIndex, outgoingEntry);
 
         collector.collect(Tuple.NULL, rel);
     }
