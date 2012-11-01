@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.UUID;
 
-class Neo4jTap extends Tap<JobConf, RecordReader, OutputCollector> {
+public class Neo4jTap extends Tap<JobConf, RecordReader, OutputCollector> {
     private final String id = UUID.randomUUID().toString();
     private final String restConnectionString;
 
