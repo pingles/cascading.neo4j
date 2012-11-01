@@ -7,8 +7,6 @@ import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 import cascading.test.HadoopPlatform;
 import cascading.tuple.Fields;
-import com.googlecode.totallylazy.Callable1;
-import com.googlecode.totallylazy.Sequence;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -18,7 +16,6 @@ import org.junit.runners.JUnit4;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.rest.graphdb.RestGraphDatabase;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
@@ -65,11 +62,7 @@ public class FlowTest {
     public void shouldStoreNodes() {
         Fields sourceFields = new Fields("name");
 
-        Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names.csv");
-        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jNodeScheme());
-        Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
-        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
-        nodeFlow.complete();
+        flowNodes(sourceFields, "src/test/resources/names.csv");
 
         assertEquals(2 + 1, toList(neoService().getAllNodes()).size());
     }
@@ -77,13 +70,9 @@ public class FlowTest {
     @Test
     public void shouldStoreNodeWithMultipleProperties() {
         Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
+        String filename = "src/test/resources/names_and_nationality.csv";
 
-        Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
-        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jNodeScheme());
-        Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
-        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
-
-        nodeFlow.complete();
+        flowNodes(sourceFields, filename);
 
         Node node = neoService().getNodeById(1);
         assertEquals(1, node.getId());
@@ -94,19 +83,35 @@ public class FlowTest {
     @Test
     public void shouldStoreNodeWithIndexes() {
         Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
+        String filename = "src/test/resources/names_and_nationality.csv";
+        IndexSpec indexSpec = new IndexSpec("users", new Fields("name", "nationality"));
 
-        Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
-        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jNodeScheme(new IndexSpec("users", new Fields("name", "nationality"))));
-        Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
-        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
-
-        nodeFlow.complete();
+        flowNodes(sourceFields, filename, indexSpec);
 
         List<Node> nodes = toList(neoService().index().forNodes("users").get("nationality", "british"));
 
         assertEquals(2, nodes.size());
         assertEquals("pingles", nodes.get(0).getProperty("name"));
         assertEquals("angrymike", nodes.get(1).getProperty("name"));
+    }
+
+    private void flowNodes(Fields sourceFields, String filename) {
+        flowNodes(sourceFields, filename, null);
+    }
+
+    private void flowNodes(Fields sourceFields, String filename, IndexSpec indexSpec) {
+        Neo4jNodeScheme scheme;
+        if (indexSpec != null) {
+            scheme = new Neo4jNodeScheme(indexSpec);
+        } else {
+            scheme = new Neo4jNodeScheme();
+        }
+
+        Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", filename);
+        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, scheme);
+        Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
+        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
+        nodeFlow.complete();
     }
 
     protected GraphDatabaseService neoService() {
