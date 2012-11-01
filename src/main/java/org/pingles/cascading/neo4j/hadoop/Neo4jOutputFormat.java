@@ -4,6 +4,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordWriter;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +19,11 @@ public class Neo4jOutputFormat<K, V> implements OutputFormat<K,V> {
         conf.set(REST_CONN_STRING_CONFIG_PROPERTY, restConnectionString);
     }
 
-    public RecordWriter<K, V> getRecordWriter(FileSystem fileSystem, JobConf jobConf, String s, Progressable progressable) throws IOException {
+    public RecordWriter<K, V> getRecordWriter(FileSystem fileSystem, JobConf jobConf, String s, Progressable progress) throws IOException {
+        Reporter r = (Reporter)progress;
         String restConnectionString = jobConf.get(REST_CONN_STRING_CONFIG_PROPERTY);
         LOGGER.info("Creating RecordWriter, connecting to {}", restConnectionString);
-        return new Neo4jRecordWriter(restConnectionString);
+        return new Neo4jRecordWriter(restConnectionString, r);
     }
 
     public void checkOutputSpecs(FileSystem fileSystem, JobConf entries) throws IOException {

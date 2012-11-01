@@ -34,7 +34,7 @@ public class TupleNeo4j implements Neo4jWritable {
                 String fieldName = (String) fields.get(idx);
                 Object fieldValue = tupleEntry.getTuple().getObject(idx);
 
-                node.setProperty(fieldName, fieldValue);
+                node.setProperty(cleanFieldName(fieldName), fieldValue);
             }
 
             if (indexSpec != null) {
@@ -50,5 +50,19 @@ public class TupleNeo4j implements Neo4jWritable {
         } finally {
             transaction.finish();
         }
+    }
+
+    // Neo4j doesn't seem to like persisting properties that start with a question mark
+    // (which happens when sinking data from Cascalog). For now, just strip any preceding
+    // question marks
+    private String cleanFieldName(String fieldName) {
+        if (startsWithCascalogCharacter(fieldName)) {
+            return cleanFieldName(fieldName.substring(1));
+        }
+        return fieldName;
+    }
+
+    private boolean startsWithCascalogCharacter(String val) {
+        return val.startsWith("?") || val.startsWith("!");
     }
 }

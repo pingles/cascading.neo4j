@@ -70,6 +70,20 @@ public class FlowTest {
     }
 
     @Test
+    public void shouldRemoveLeadingQuestionmarksFromPropertyNamesForCascalogsBenefit() {
+        Fields sourceFields = new Fields("?name");
+        flowNodes(sourceFields, "src/test/resources/names.csv");
+        assertEquals("pingles", neoService().getNodeById(1).getProperty("name"));
+    }
+
+    @Test
+    public void shouldRemoveLeadingExclamationMarkFromPropertyNamesForGreatBenefitOfCascalogs() {
+        Fields sourceFields = new Fields("!name");
+        flowNodes(sourceFields, "src/test/resources/names.csv");
+        assertEquals("pingles", neoService().getNodeById(1).getProperty("name"));
+    }
+
+    @Test
     public void shouldStoreNodeWithMultipleProperties() {
         Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
         String filename = "src/test/resources/names_and_nationality.csv";
