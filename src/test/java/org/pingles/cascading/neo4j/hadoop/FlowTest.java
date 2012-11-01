@@ -104,11 +104,7 @@ public class FlowTest {
         flowNodes(relFields, nameField, "src/test/resources/names_and_nationality.csv", usersIndex);
         flowNodes(nameField, nameField, "src/test/resources/nationalities.csv", nationsIndex);
 
-        Tap relationsTap = hadoopPlatform.getDelimitedFile(relFields, ",", "src/test/resources/names_and_nationality.csv");
-        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jRelationshipScheme(relFields, usersIndex, nationsIndex));
-        Pipe nodePipe = new Each("relations", relFields, new Identity());
-        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(relationsTap, sinkTap, nodePipe);
-        nodeFlow.complete();
+        flowRelations(relFields, "src/test/resources/names_and_nationality.csv", usersIndex, nationsIndex);
 
         Node pingles = neoService().index().forNodes("users").get("name", "pingles").getSingle();
         List<Relationship> relationships = toList(pingles.getRelationships());
@@ -117,12 +113,19 @@ public class FlowTest {
         assertEquals("NATIONALITY", relationships.get(0).getType().name());
     }
 
+    private void flowRelations(Fields relationshipFields, String filename, IndexSpec fromIndex, IndexSpec toIndex) {
+        Tap relationsTap = hadoopPlatform.getDelimitedFile(relationshipFields, ",", filename);
+        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jRelationshipScheme(relationshipFields, fromIndex, toIndex));
+        Pipe nodePipe = new Each("relations", relationshipFields, new Identity());
+        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(relationsTap, sinkTap, nodePipe);
+        nodeFlow.complete();
+    }
+
     private void flowNodes(Fields sourceFields, String filename, Fields outgoingFields) {
         flowNodes(sourceFields, outgoingFields, filename, null);
     }
 
     private void flowNodes(Fields sourceFields, Fields outgoingFields, String filename, IndexSpec indexSpec) {
-
         Neo4jNodeScheme scheme;
         if (indexSpec != null) {
             scheme = new Neo4jNodeScheme(indexSpec);
