@@ -10,11 +10,21 @@ import cascading.tuple.TupleEntry;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
+import org.pingles.cascading.neo4j.IndexSpec;
 
 import java.io.IOException;
 
 // Scheme<Config, Input, Output, SourceContext, SinkContext
 public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
+    private IndexSpec indexSpec;
+
+    public Neo4jNodeScheme() {
+    }
+
+    public Neo4jNodeScheme(IndexSpec indexSpec) {
+        this.indexSpec = indexSpec;
+    }
+
     @Override
     public void sourceConfInit(FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
         throw new UnsupportedOperationException();
@@ -29,7 +39,6 @@ public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollect
     public void sinkConfInit(FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf) {
         conf.setOutputKeyClass(Tuple.class);
         conf.setOutputValueClass(Tuple.class);
-
         conf.setOutputFormat(Neo4jOutputFormat.class);
     }
 
@@ -37,7 +46,13 @@ public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollect
     public void sink(FlowProcess flowProcess, SinkCall sinkCall) throws IOException {
         OutputCollector collector = (OutputCollector) sinkCall.getOutput();
         TupleEntry outgoingEntry = sinkCall.getOutgoingEntry();
-        TupleNode node = new TupleNode(outgoingEntry);
+
+        TupleNode node;
+        if (indexSpec != null) {
+            node = new TupleNode(outgoingEntry, indexSpec);
+        } else {
+            node = new TupleNode(outgoingEntry);
+        }
 
         collector.collect(Tuple.NULL, node);
     }

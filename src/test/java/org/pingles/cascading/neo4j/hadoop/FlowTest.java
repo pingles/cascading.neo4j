@@ -24,8 +24,12 @@ import org.neo4j.rest.graphdb.RestGraphDatabase;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.server.configuration.Configurator;
 import org.neo4j.server.configuration.ServerConfigurator;
+import org.pingles.cascading.neo4j.IndexSpec;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+
 import static com.googlecode.totallylazy.Sequences.sequence;
 import static junit.framework.Assert.*;
 import static org.neo4j.helpers.collection.Iterables.toList;
@@ -92,18 +96,17 @@ public class FlowTest {
         Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
 
         Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
-        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jNodeScheme());
+        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jNodeScheme(new IndexSpec("users", new Fields("name", "nationality"))));
         Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
         Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
 
         nodeFlow.complete();
 
-        IndexHits<Node> nodes = neoService().index().forNodes("users").get("nationality", "british");
+        List<Node> nodes = toList(neoService().index().forNodes("users").get("nationality", "british"));
 
-        Sequence names = sequence(nodes).map(new ExtractProperty("name"));
-        assertEquals(2, names.size());
-        assertEquals("pingles", names.get(0));
-        assertEquals("angrymike", names.get(1));
+        assertEquals(2, nodes.size());
+        assertEquals("pingles", nodes.get(0).getProperty("name"));
+        assertEquals("angrymike", nodes.get(1).getProperty("name"));
     }
 
     protected GraphDatabaseService neoService() {
@@ -111,17 +114,5 @@ public class FlowTest {
             graphDatabaseService = new RestGraphDatabase(REST_CONNECTION_STRING);
         }
         return graphDatabaseService;
-    }
-
-    private class ExtractProperty implements Callable1 {
-        private final String propertyName;
-
-        public ExtractProperty(String propertyName) {
-            this.propertyName = propertyName;
-        }
-
-        public Object call(Object o) throws Exception {
-            return ((Node)o).getProperty(propertyName);
-        }
     }
 }

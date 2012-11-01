@@ -19,7 +19,7 @@ import java.util.List;
 public class Neo4jTestCase {
     protected LocalPlatform localPlatform;
 
-    static <T> List<T> toList(Iterable<T> c) {
+    public static <T> List<T> toList(Iterable<T> c) {
         List<T> list = new ArrayList<T>();
         for (T o : c) {
             list.add(o);
