@@ -8,20 +8,20 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.pingles.cascading.neo4j.IndexSpec;
 
-public class TupleNode implements NodeWritable {
+public class TupleNeo4j implements Neo4jWritable {
     private final TupleEntry tupleEntry;
     private IndexSpec indexSpec;
 
-    public TupleNode(TupleEntry tupleEntry) {
+    public TupleNeo4j(TupleEntry tupleEntry) {
         this(tupleEntry, null);
     }
 
-    public TupleNode(TupleEntry tupleEntry, IndexSpec indexSpec) {
+    public TupleNeo4j(TupleEntry tupleEntry, IndexSpec indexSpec) {
         this.tupleEntry = tupleEntry;
         this.indexSpec = indexSpec;
     }
 
-    public void addNode(GraphDatabaseService service) {
+    public void store(GraphDatabaseService service) {
         Transaction transaction = service.beginTx();
 
         try {

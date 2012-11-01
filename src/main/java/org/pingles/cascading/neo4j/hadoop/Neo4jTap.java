@@ -1,6 +1,7 @@
 package org.pingles.cascading.neo4j.hadoop;
 
 import cascading.flow.FlowProcess;
+import cascading.scheme.Scheme;
 import cascading.tap.Tap;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
@@ -15,10 +16,9 @@ import java.util.UUID;
 
 class Neo4jTap extends Tap<JobConf, RecordReader, OutputCollector> {
     private final String id = UUID.randomUUID().toString();
-    private static final Logger LOG = LoggerFactory.getLogger(Neo4jTap.class);
     private final String restConnectionString;
 
-    Neo4jTap(String restConnectionString, Neo4jNodeScheme scheme) {
+    Neo4jTap(String restConnectionString, Scheme scheme) {
         super(scheme);
         this.restConnectionString = restConnectionString;
     }

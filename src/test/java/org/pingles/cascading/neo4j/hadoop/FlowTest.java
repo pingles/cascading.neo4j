@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.rest.graphdb.RestGraphDatabase;
@@ -22,14 +23,11 @@ import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.server.configuration.Configurator;
 import org.neo4j.server.configuration.ServerConfigurator;
 import org.pingles.cascading.neo4j.IndexSpec;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-import static com.googlecode.totallylazy.Sequences.sequence;
 import static junit.framework.Assert.*;
-import static org.neo4j.helpers.collection.Iterables.toList;
+import static org.pingles.cascading.neo4j.local.Neo4jTestCase.toList;
 
 @RunWith(JUnit4.class)
 public class FlowTest {
@@ -62,7 +60,7 @@ public class FlowTest {
     public void shouldStoreNodes() {
         Fields sourceFields = new Fields("name");
 
-        flowNodes(sourceFields, "src/test/resources/names.csv");
+        flowNodes(sourceFields, "src/test/resources/names.csv", sourceFields);
 
         assertEquals(2 + 1, toList(neoService().getAllNodes()).size());
     }
@@ -72,7 +70,7 @@ public class FlowTest {
         Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
         String filename = "src/test/resources/names_and_nationality.csv";
 
-        flowNodes(sourceFields, filename);
+        flowNodes(sourceFields, filename, sourceFields);
 
         Node node = neoService().getNodeById(1);
         assertEquals(1, node.getId());
@@ -86,7 +84,7 @@ public class FlowTest {
         String filename = "src/test/resources/names_and_nationality.csv";
         IndexSpec indexSpec = new IndexSpec("users", new Fields("name", "nationality"));
 
-        flowNodes(sourceFields, filename, indexSpec);
+        flowNodes(sourceFields, sourceFields, filename, indexSpec);
 
         List<Node> nodes = toList(neoService().index().forNodes("users").get("nationality", "british"));
 
@@ -95,11 +93,36 @@ public class FlowTest {
         assertEquals("angrymike", nodes.get(1).getProperty("name"));
     }
 
-    private void flowNodes(Fields sourceFields, String filename) {
-        flowNodes(sourceFields, filename, null);
+    @Test
+    public void shouldCreateRelationBetweenNodes() {
+        Fields nameField = new Fields("name");
+        Fields relFields = new Fields("name", "nationality", "relationship");
+
+        IndexSpec usersIndex = new IndexSpec("users", nameField);
+        IndexSpec nationsIndex = new IndexSpec("nations", nameField);
+
+        flowNodes(relFields, nameField, "src/test/resources/names_and_nationality.csv", usersIndex);
+        flowNodes(nameField, nameField, "src/test/resources/nationalities.csv", nationsIndex);
+
+        Tap relationsTap = hadoopPlatform.getDelimitedFile(relFields, ",", "src/test/resources/names_and_nationality.csv");
+        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jRelationshipScheme(relFields, usersIndex, nationsIndex));
+        Pipe nodePipe = new Each("relations", relFields, new Identity());
+        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(relationsTap, sinkTap, nodePipe);
+        nodeFlow.complete();
+
+        Node pingles = neoService().index().forNodes("users").get("name", "pingles").getSingle();
+        List<Relationship> relationships = toList(pingles.getRelationships());
+        assertEquals(1, relationships.size());
+        assertEquals("british", relationships.get(0).getEndNode().getProperty("name"));
+        assertEquals("NATIONALITY", relationships.get(0).getType().name());
     }
 
-    private void flowNodes(Fields sourceFields, String filename, IndexSpec indexSpec) {
+    private void flowNodes(Fields sourceFields, String filename, Fields outgoingFields) {
+        flowNodes(sourceFields, outgoingFields, filename, null);
+    }
+
+    private void flowNodes(Fields sourceFields, Fields outgoingFields, String filename, IndexSpec indexSpec) {
+
         Neo4jNodeScheme scheme;
         if (indexSpec != null) {
             scheme = new Neo4jNodeScheme(indexSpec);
@@ -109,7 +132,7 @@ public class FlowTest {
 
         Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", filename);
         Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, scheme);
-        Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
+        Pipe nodePipe = new Each("Nodes", outgoingFields, new Identity());
         Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
         nodeFlow.complete();
     }
