@@ -49,7 +49,6 @@ public class FlowTest {
         config.configuration().setProperty(Configurator.WEBSERVER_PORT_PROPERTY_KEY, 7575);
         server = new WrappingNeoServerBootstrapper(graphdb, config);
         server.start();
-        graphDatabaseService = new RestGraphDatabase(REST_CONNECTION_STRING);
     }
 
     @After
@@ -57,7 +56,6 @@ public class FlowTest {
         neoService().index().forNodes("users").delete();    // CAUTION hard coded
         neoService().index().forNodes("nations").delete();
 
-        graphDatabaseService.shutdown();
         server.stop();
         FileUtils.deleteDirectory(new File(NEO4J_DB_DIR));
     }
@@ -169,6 +167,10 @@ public class FlowTest {
     }
 
     protected GraphDatabaseService neoService() {
+        if (graphDatabaseService != null) {
+            return graphDatabaseService;
+        }
+        graphDatabaseService = new RestGraphDatabase(REST_CONNECTION_STRING);
         return graphDatabaseService;
     }
 }
