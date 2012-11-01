@@ -8,11 +8,13 @@ import cascading.tap.Tap;
 import cascading.test.HadoopPlatform;
 import cascading.tuple.Fields;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.rest.graphdb.RestGraphDatabase;
@@ -22,7 +24,6 @@ import org.neo4j.server.configuration.ServerConfigurator;
 
 import java.io.File;
 import java.io.IOException;
-
 import static junit.framework.Assert.*;
 import static org.neo4j.helpers.collection.Iterables.toList;
 
@@ -48,6 +49,11 @@ public class FlowTest {
         server.start();
     }
 
+    @After
+    public void afterEach() {
+        server.stop();
+    }
+
     @Test
     public void shouldStoreNodes() {
         Fields sourceFields = new Fields("name");
@@ -59,6 +65,23 @@ public class FlowTest {
         nodeFlow.complete();
 
         assertEquals(2 + 1, toList(neoService().getAllNodes()).size());
+    }
+
+    @Test
+    public void shouldStoreNodeWithMultipleProperties() {
+        Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
+
+        Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
+        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jNodeScheme());
+        Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
+        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
+
+        nodeFlow.complete();
+
+        Node node = neoService().getNodeById(1);
+        assertEquals(1, node.getId());
+        assertEquals("pingles", node.getProperty("name"));
+        assertEquals("british", node.getProperty("nationality"));
     }
 
     protected GraphDatabaseService neoService() {

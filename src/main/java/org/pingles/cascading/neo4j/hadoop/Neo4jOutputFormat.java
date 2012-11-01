@@ -21,7 +21,7 @@ public class Neo4jOutputFormat<K, V> implements OutputFormat<K,V> {
     public RecordWriter<K, V> getRecordWriter(FileSystem fileSystem, JobConf jobConf, String s, Progressable progressable) throws IOException {
         String restConnectionString = jobConf.get(REST_CONN_STRING_CONFIG_PROPERTY);
         LOGGER.info("Creating RecordWriter, connecting to {}", restConnectionString);
-        return new Neo4jRecordWriter<K,V>(restConnectionString);
+        return new Neo4jRecordWriter(restConnectionString);
     }
 
     public void checkOutputSpecs(FileSystem fileSystem, JobConf entries) throws IOException {
