@@ -7,6 +7,8 @@ import cascading.pipe.Pipe;
 import cascading.tap.Tap;
 import cascading.test.HadoopPlatform;
 import cascading.tuple.Fields;
+import com.googlecode.totallylazy.Callable1;
+import com.googlecode.totallylazy.Sequence;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -16,14 +18,15 @@ import org.junit.runners.JUnit4;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.rest.graphdb.RestGraphDatabase;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 import org.neo4j.server.configuration.Configurator;
 import org.neo4j.server.configuration.ServerConfigurator;
-
 import java.io.File;
 import java.io.IOException;
+import static com.googlecode.totallylazy.Sequences.sequence;
 import static junit.framework.Assert.*;
 import static org.neo4j.helpers.collection.Iterables.toList;
 
@@ -84,10 +87,41 @@ public class FlowTest {
         assertEquals("british", node.getProperty("nationality"));
     }
 
+    @Test
+    public void shouldStoreNodeWithIndexes() {
+        Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
+
+        Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", "src/test/resources/names_and_nationality.csv");
+        Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jNodeScheme());
+        Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
+        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
+
+        nodeFlow.complete();
+
+        IndexHits<Node> nodes = neoService().index().forNodes("users").get("nationality", "british");
+
+        Sequence names = sequence(nodes).map(new ExtractProperty("name"));
+        assertEquals(2, names.size());
+        assertEquals("pingles", names.get(0));
+        assertEquals("angrymike", names.get(1));
+    }
+
     protected GraphDatabaseService neoService() {
         if (graphDatabaseService == null) {
             graphDatabaseService = new RestGraphDatabase(REST_CONNECTION_STRING);
         }
         return graphDatabaseService;
+    }
+
+    private class ExtractProperty implements Callable1 {
+        private final String propertyName;
+
+        public ExtractProperty(String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+        public Object call(Object o) throws Exception {
+            return ((Node)o).getProperty(propertyName);
+        }
     }
 }
