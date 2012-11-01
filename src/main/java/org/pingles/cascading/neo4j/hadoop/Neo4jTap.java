@@ -18,7 +18,7 @@ class Neo4jTap extends Tap<JobConf, RecordReader, OutputCollector> {
     private final String id = UUID.randomUUID().toString();
     private final String restConnectionString;
 
-    Neo4jTap(String restConnectionString, Scheme scheme) {
+    public Neo4jTap(String restConnectionString, Scheme scheme) {
         super(scheme);
         this.restConnectionString = restConnectionString;
     }
