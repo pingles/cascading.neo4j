@@ -51,5 +51,7 @@ public class Neo4jRelationshipScheme  extends Scheme<JobConf, RecordReader, Outp
         Neo4jRelationshipTuple rel = new Neo4jRelationshipTuple(fromIndex, toIndex, outgoingEntry);
 
         collector.collect(Tuple.NULL, rel);
+
+        flowProcess.increment("org.pingles.cascading.Neo4j", "Nodes Created", 1);
     }
 }
