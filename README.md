@@ -6,5 +6,5 @@ Current build status: [![Build Status](https://secure.travis-ci.org/pingles/casc
 
 ## TODO
 
-* Specify field names when persisting properties on Nodes. Will be useful given Cascalog prefixes with ? and !
-* What to do WRT SinkMode.REPLACE etc.
+* empty or null property value should not be stored
+* What to do WRT SinkMode.REPLACE etc. if the node already exist in index
