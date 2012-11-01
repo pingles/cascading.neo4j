@@ -113,6 +113,28 @@ public class FlowTest {
         assertEquals("NATIONALITY", relationships.get(0).getType().name());
     }
 
+    @Test
+    public void shouldCreateRelationshipsWithAdditionalProperties() {
+        Fields nameField = new Fields("name");
+        Fields relFields = new Fields("name", "nationality", "relationship", "yearsofcitizenship", "passportexpiring");
+
+        IndexSpec usersIndex = new IndexSpec("users", nameField);
+        IndexSpec nationsIndex = new IndexSpec("nations", nameField);
+
+        flowNodes(relFields, nameField, "src/test/resources/names_nations_and_more.csv", usersIndex);
+        flowNodes(nameField, nameField, "src/test/resources/nationalities.csv", nationsIndex);
+
+        flowRelations(relFields, "src/test/resources/names_nations_and_more.csv", usersIndex, nationsIndex);
+
+        Node pingles = neoService().index().forNodes("users").get("name", "pingles").getSingle();
+        List<Relationship> relationships = toList(pingles.getRelationships());
+        assertEquals(1, relationships.size());
+        assertEquals("british", relationships.get(0).getEndNode().getProperty("name"));
+        assertEquals("NATIONALITY", relationships.get(0).getType().name());
+        assertEquals("31", relationships.get(0).getProperty("yearsofcitizenship"));
+        assertEquals("3", relationships.get(0).getProperty("passportexpiring"));
+    }
+
     private void flowRelations(Fields relationshipFields, String filename, IndexSpec fromIndex, IndexSpec toIndex) {
         Tap relationsTap = hadoopPlatform.getDelimitedFile(relationshipFields, ",", filename);
         Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jRelationshipScheme(relationshipFields, fromIndex, toIndex));
