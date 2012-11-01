@@ -33,7 +33,16 @@ public class TupleRelationship implements Neo4jWritable {
 
         Transaction transaction = service.beginTx();
         try {
-            fromNode.createRelationshipTo(toNode, new StringRelationshipType(relationshipLabel));
+            Relationship relationship = fromNode.createRelationshipTo(toNode, new StringRelationshipType(relationshipLabel));
+
+            if (tupleEntry.getFields().size() > 3) {
+                for (int i = 3; i < tupleEntry.size(); i++) {
+                    String propertyName = (String) tupleEntry.getFields().get(i);
+                    Object propertyValue = tupleEntry.getObject(i);
+                    relationship.setProperty(propertyName, propertyValue);
+                }
+            }
+
             transaction.success();
         } finally {
             transaction.finish();
