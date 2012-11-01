@@ -5,6 +5,7 @@ import cascading.scheme.Scheme;
 import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
 import cascading.tap.Tap;
+import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import org.apache.hadoop.mapred.JobConf;
@@ -18,10 +19,12 @@ import java.io.IOException;
 public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
     private IndexSpec indexSpec;
 
-    public Neo4jNodeScheme() {
+    public Neo4jNodeScheme(Fields sourceFields) {
+        super(sourceFields);
     }
 
-    public Neo4jNodeScheme(IndexSpec indexSpec) {
+    public Neo4jNodeScheme(Fields sourceFields, IndexSpec indexSpec) {
+        super(sourceFields);
         this.indexSpec = indexSpec;
     }
 
@@ -45,13 +48,13 @@ public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollect
     @Override
     public void sink(FlowProcess flowProcess, SinkCall sinkCall) throws IOException {
         OutputCollector collector = (OutputCollector) sinkCall.getOutput();
-        TupleEntry outgoingEntry = sinkCall.getOutgoingEntry();
+        TupleEntry tuple = sinkCall.getOutgoingEntry();
 
         TupleNeo4j node;
         if (indexSpec != null) {
-            node = new TupleNeo4j(outgoingEntry, indexSpec);
+            node = new TupleNeo4j(getSourceFields(), tuple, indexSpec);
         } else {
-            node = new TupleNeo4j(outgoingEntry);
+            node = new TupleNeo4j(getSourceFields(), tuple);
         }
 
         collector.collect(Tuple.NULL, node);

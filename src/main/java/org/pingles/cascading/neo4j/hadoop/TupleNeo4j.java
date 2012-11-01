@@ -11,14 +11,16 @@ import org.pingles.cascading.neo4j.IndexSpec;
 public class TupleNeo4j implements Neo4jWritable {
     private final TupleEntry tupleEntry;
     private IndexSpec indexSpec;
+    private Fields sinkFields;
 
-    public TupleNeo4j(TupleEntry tupleEntry) {
-        this(tupleEntry, null);
+    public TupleNeo4j(Fields sinkFields, TupleEntry tupleEntry) {
+        this(sinkFields, tupleEntry, null);
     }
 
-    public TupleNeo4j(TupleEntry tupleEntry, IndexSpec indexSpec) {
+    public TupleNeo4j(Fields sinkFields, TupleEntry tupleEntry, IndexSpec indexSpec) {
         this.tupleEntry = tupleEntry;
         this.indexSpec = indexSpec;
+        this.sinkFields = sinkFields;
     }
 
     public void store(GraphDatabaseService service) {
@@ -26,7 +28,7 @@ public class TupleNeo4j implements Neo4jWritable {
 
         try {
             Node node = service.createNode();
-            Fields fields = tupleEntry.getFields();
+            Fields fields = sinkFields;
 
             for (int idx = 0; idx < fields.size(); idx++) {
                 String fieldName = (String) fields.get(idx);
