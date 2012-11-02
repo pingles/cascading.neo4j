@@ -78,6 +78,16 @@ public class FlowTest {
     }
 
     @Test
+    public void withLeadingQuestionMarkIndexField() {
+        Fields sourceFields = new Fields("?name");
+        flowNodes(sourceFields, "src/test/resources/names.csv", new IndexSpec("users", sourceFields));
+
+        List<Node> nodes = toList(neoService().index().forNodes("users").get("name", "pingles"));
+        assertEquals(1, nodes.size());
+        assertEquals("pingles", nodes.get(0).getProperty("name"));
+   }
+
+    @Test
     public void shouldRemoveLeadingExclamationMarkFromPropertyNamesForGreatBenefitOfCascalogs() {
         Fields sourceFields = new Fields("!name");
         flowNodes(sourceFields, "src/test/resources/names.csv");
