@@ -129,6 +129,19 @@ public class FlowTest {
     }
 
     @Test
+    public void shouldStoreNodeWithIndexesWithNullProperties() {
+        Fields sourceFields = new Fields("name", "nationality", "city");
+        String filename = "src/test/resources/names_and_properties.csv";
+        IndexSpec indexSpec = new IndexSpec("users", new Fields("name"));
+
+        flowNodes(sourceFields, filename, indexSpec);
+
+        List<Node> nodes = toList(neoService().index().forNodes("users").get("name", "plam"));
+        assertEquals(1, nodes.size());
+        assertEquals("plam", nodes.get(0).getProperty("name"));
+    }
+
+    @Test
     public void shouldCreateRelationBetweenNodes() {
         Fields nameField = new Fields("name");
         Fields relFields = new Fields("name", "nationality", "relationship");
@@ -202,8 +215,8 @@ public class FlowTest {
 
         flowRelations(relFields, "src/test/resources/names_nations_and_more.csv", usersIndex, nationsIndex);
 
-        Node pingles = neoService().index().forNodes("users").get("name", "plam").getSingle();
-        List<Relationship> relationships = toList(pingles.getRelationships());
+        Node plam = neoService().index().forNodes("users").get("name", "plam").getSingle();
+        List<Relationship> relationships = toList(plam.getRelationships());
         assertEquals(1, relationships.size());
         assertEquals("canadian", relationships.get(0).getEndNode().getProperty("name"));
         assertEquals("NATIONALITY", relationships.get(0).getType().name());
