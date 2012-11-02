@@ -117,10 +117,14 @@ public class FlowTest {
         flowNodes(sourceFields, filename, indexSpec);
 
         List<Node> nodes = toList(neoService().index().forNodes("users").get("nationality", "british"));
-
         assertEquals(2, nodes.size());
         assertEquals("pingles", nodes.get(0).getProperty("name"));
         assertEquals("angrymike", nodes.get(1).getProperty("name"));
+
+        nodes = toList(neoService().index().forNodes("users").get("name", "plam"));
+        assertEquals(1, nodes.size());
+        assertEquals("plam", nodes.get(0).getProperty("name"));
+        assertEquals("canadian", nodes.get(0).getProperty("nationality"));
     }
 
     @Test
