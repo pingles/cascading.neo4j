@@ -4,6 +4,7 @@ import cascading.flow.Flow;
 import cascading.operation.Identity;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.test.HadoopPlatform;
 import cascading.tuple.Fields;
@@ -88,12 +89,23 @@ public class FlowTest {
         Fields sourceFields = new Fields("name", "nationality", "relationshipLabel");
         String filename = "src/test/resources/names_and_nationality.csv";
 
-        flowNodes(sourceFields, filename);
-
+        flowNodes(sourceFields,filename);
         Node node = neoService().getNodeById(1);
         assertEquals(1, node.getId());
         assertEquals("pingles", node.getProperty("name"));
         assertEquals("british", node.getProperty("nationality"));
+    }
+
+    @Test
+    public void shouldSkipNullProperties() {
+        Fields sourceFields = new Fields("name", "nationality", "city");
+        String filename = "src/test/resources/names_and_properties.csv";
+
+        flowNodes(sourceFields, filename);
+
+        Node node = neoService().getNodeById(2);
+        assertEquals("plam", node.getProperty("name"));
+        assertFalse(node.hasProperty("nationality"));
     }
 
     @Test
