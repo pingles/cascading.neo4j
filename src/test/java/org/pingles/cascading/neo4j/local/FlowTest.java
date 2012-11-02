@@ -125,20 +125,20 @@ public class FlowTest extends Neo4jTestCase {
     @Test
     public void shouldCreateRelationshipsWithProperties() {
         Fields nameFields = new Fields("name");
+        Fields relationshipFields = new Fields("name", "country", "relationship", "yearsofcitizenship", "passportexpiring");
         IndexSpec userIndex = new IndexSpec("users", nameFields);
         IndexSpec nationIndex = new IndexSpec("nationalities", nameFields);
 
-        flowNodes("Users", "src/test/resources/names_and_nationality.csv", new Fields("name", "nationality"), nameFields, userIndex, getNeo4jService());
+        flowNodes("Users", "src/test/resources/names_nations_and_more.csv", relationshipFields, nameFields, userIndex, getNeo4jService());
         flowNodes("Nationalities", "src/test/resources/nationalities.csv", nameFields, nameFields, nationIndex, getNeo4jService());
 
-        Fields relationshipFields = new Fields("person", "country", "relationship", "yearsofcitizenship", "passportexpiring");
         flowRelations("Relations", "src/test/resources/names_nations_and_more.csv", relationshipFields, userIndex, nationIndex, getNeo4jService());
 
-        Node plam = neo4j.indexForNodes("users").get("name", "plam").getSingle();
-        Relationship citizenship = toList(plam.getRelationships()).get(0);
+        Node tbot = neo4j.indexForNodes("users").get("name", "t_bot").getSingle();
+        Relationship citizenship = toList(tbot.getRelationships()).get(0);
 
-        assertEquals("31", citizenship.getProperty("yearsofcitizenship"));
-        assertEquals("1", citizenship.getProperty("passportexpiring"));
+        assertEquals("29", citizenship.getProperty("yearsofcitizenship"));
+        assertEquals("5", citizenship.getProperty("passportexpiring"));
     }
 
     public GraphDatabaseService getNeo4jService() {

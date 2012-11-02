@@ -84,7 +84,9 @@ public class Neo4jRelationshipScheme extends Scheme {
                     for (int i = 3; i < outgoingEntry.size(); i++) {
                         String propertyName = (String) outgoingEntry.getFields().get(i);
                         Object propertyValue = outgoingEntry.getObject(i);
-                        relationship.setProperty(propertyName, propertyValue);
+
+                        if (propertyValue != null)
+                            relationship.setProperty(propertyName, propertyValue);
                     }
                 }
 

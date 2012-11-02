@@ -75,7 +75,8 @@ public class Neo4jNodeScheme extends Scheme {
                 String fieldName = (String) fields.get(idx);
                 Object fieldValue = outgoingEntry.getTuple().getObject(idx);
 
-                node.setProperty(fieldName, fieldValue);
+                if (fieldValue != null)
+                    node.setProperty(fieldName, fieldValue);
             }
 
             if (index != null) {
