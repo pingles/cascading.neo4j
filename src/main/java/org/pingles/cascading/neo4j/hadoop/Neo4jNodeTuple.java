@@ -34,7 +34,7 @@ public class Neo4jNodeTuple extends Neo4jTuple implements Neo4jWritable {
                 String fieldName = (String) fields.get(idx);
                 Object fieldValue = tupleEntry.getTuple().getObject(idx);
 
-                node.setProperty(cleanPropertyName(fieldName), fieldValue);  // FIX: Caused by: com.sun.jersey.api.client.ClientHandlerException: java.net.SocketTimeoutException: Read timed out
+                node.setProperty(cleanPropertyName(fieldName), fieldValue);
             }
 
             if (indexSpec != null) {

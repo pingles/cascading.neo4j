@@ -20,12 +20,13 @@ public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollect
     private IndexSpec indexSpec;
 
     public Neo4jNodeScheme(Fields sourceFields) {
-        super(sourceFields);
+        this(sourceFields, null);
     }
 
     public Neo4jNodeScheme(Fields sourceFields, IndexSpec indexSpec) {
-        super(sourceFields);
-        this.indexSpec = indexSpec;
+        super(sourceFields, 1);     // hardcode sinkparts to 1 to minimise socket timeout exception
+        if (indexSpec != null)
+            this.indexSpec = indexSpec;
     }
 
     @Override
