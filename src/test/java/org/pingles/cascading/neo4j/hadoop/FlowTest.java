@@ -106,6 +106,7 @@ public class FlowTest {
         Node node = neoService().getNodeById(2);
         assertEquals("plam", node.getProperty("name"));
         assertFalse(node.hasProperty("nationality"));
+        assertFalse(node.hasProperty("city"));
     }
 
     @Test
