@@ -40,7 +40,8 @@ public class Neo4jRelationshipTuple extends Neo4jTuple implements Neo4jWritable 
                     String propertyName = (String) tupleEntry.getFields().get(i);
                     Object propertyValue = tupleEntry.getObject(i);
 
-                    relationship.setProperty(cleanPropertyName(propertyName), propertyValue);
+                    if (propertyValue != null)      // would work too without but save a PUT request
+                        relationship.setProperty(cleanPropertyName(propertyName), propertyValue);
                 }
             }
 

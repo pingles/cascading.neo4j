@@ -6,5 +6,4 @@ Current build status: [![Build Status](https://secure.travis-ci.org/pingles/casc
 
 ## TODO
 
-* empty or null property value should not be stored
 * What to do WRT SinkMode.REPLACE etc. if the node already exist in index

@@ -34,7 +34,7 @@ public class Neo4jNodeTuple extends Neo4jTuple implements Neo4jWritable {
                 String fieldName = (String) fields.get(idx);
                 Object fieldValue = tupleEntry.getTuple().getObject(idx);
 
-                if (fieldValue != null)
+                if (fieldValue != null)     // would work too without but save a PUT request
                     node.setProperty(cleanPropertyName(fieldName), fieldValue);
             }
 
