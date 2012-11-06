@@ -127,3 +127,7 @@ Scheme scheme = new RelationshipScheme(fields, fromIndex, toIndex);
 
 * What to do WRT SinkMode.REPLACE etc. if the node already exist in index
 * The local and hadoop versions do largely the same thing, but in different ways. It'd be nice to factor out as much as possible to reduce duplication.
+
+## Licensing
+
+cascading.neo4j is licensed under the Apache 2.0 open source license: [http://opensource.org/licenses/Apache-2.0](http://opensource.org/licenses/Apache-2.0).
