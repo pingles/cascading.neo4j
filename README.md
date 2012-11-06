@@ -1,8 +1,120 @@
 # cascading.neo4j
 
-Provides a Tap and Scheme suitable for sinking Cascading flows to a running Neo4j database.
+Provides a Tap and Scheme suitable for sinking [Cascading](http://www.cascading.org) flows to a running Neo4j database. It currently doesn't support
+sourcing data. It was built for use with Cascading 2.x and Hadoop 0.20.x.
 
 Current build status: [![Build Status](https://secure.travis-ci.org/pingles/cascading.neo4j.png)](http://secure.travis-ci.org/pingles/cascading.neo4j)
+
+## Installing
+
+cascading.neo4j is hosted on [Conjars.org](http://conjars.org): a repository for open-source Cascading libraries.
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>org.pingles</groupId>
+    <artifactId>cascading.neo4j</artifactId>
+    <version>1.0</version>
+</dependency>
+```
+
+### Leiningen
+
+Add the following to your `project.clj`:
+
+```clojure
+:dependencies [[org.pingles/cascading.neo4j "1.0"]
+```
+
+## Usage
+
+`cascading.neo4j` provides 2 `Neo4jTap` classes- one suitable for use when running flows on Hadoop and one for local
+flows. Given we're most interested in Hadoop flows the example below will be for that.
+
+`cascading.neo4j` breaks flows into 2 parts- the creation of Nodes and Relationships. Note that nodes can be constructed
+with their indexes at the same time. Creating a relationship between nodes requires looking up nodes via indexes.
+
+### Sinking Nodes
+
+Creating a `NodeScheme` requires you to provide the fields of the tuples that will flow to the Tap (via the Scheme). This
+is so we can construct properties on the nodes with the correct names. Given we use Cascalog, we clean the field names
+when creating properties to remove any ? or ! prefixes.
+
+```java
+Fields sourceFields = new Fields("name", "nationality");
+NodeScheme scheme = new NodeScheme(sourceFields);
+Tap sink = new Neo4jTap("http://neo4j.rest.co/db/data", scheme);
+```
+
+This tap can then be used in a regular Cascading flow. For example, the following shows reading from a delimited
+file (containing name and nationality attributes). It will construct a Node for every record, and set `name` and
+`nationality` properties on the node with the corresponding values for the record.
+
+```java
+HadoopPlatform platform = new HadoopPlatform();
+Fields sourceFields = new Fields("name", "nationality");
+
+Tap source = platform.getDelimitedFile(sourceFields, ",", filename);
+NodeScheme scheme = new NodeScheme(sourceFields);
+Tap sink = new Neo4jTap("http://neo4j.rest.co/db/data", scheme);
+
+Pipe pipe = new Each("Flow nodes", sourceFields, new Identity());
+Flow flow = platform.getFlowConnector().connect(source, sink, pipe);
+flow.complete();
+```
+
+### Node Indexes
+
+Creating a Neo4j index on a property is as simple as providing an `IndexSpec` instance to the Scheme. Following
+the example above, to create an index on `name` you would create the scheme as follows:
+
+```java
+IndexSpec usersIndex = new IndexSpec("users", new Fields("name"));
+NodeScheme scheme = new NodeScheme(new Fields("name", "nationality"));
+```
+
+Fields must intersect with the source fields (otherwise you'll generate errors trying to read attributes that don't exist).
+
+### Sinking Relationships
+
+Relationships connect nodes together. We therefore expect a flow to contain a source node key, a destination node key,
+a label for the relationship, and any properties you want to add to the relationship.
+
+For example, to connect a User node to a Nationality node your source data will look like this:
+
+```
+pingles,british,NATIONALITY
+mjones,british,NATIONALITY
+plam,canadian,NATIONALITY
+t_bot,french,NATIONALITY
+```
+
+to be read a little like this:
+
+```
+pingles --(NATIONALITY)--> british
+```
+
+You construct a `RelationshipScheme` instance providing the `IndexSpec` that will be used to identify the nodes. The
+code below provides an example:
+
+```java
+IndexSpec usersIndex = new IndexSpec("users", new Fields("name"));
+IndexSpec nationsIndex = new IndexSpec("nations", new Fields("name"));
+
+Scheme scheme = new RelationshipScheme(new Fields("name", "nationality", "label"), fromIndex, toIndex);
+Tap sink = new Neo4jTap("http://neo4j.rest.co/db/data", scheme);
+```
+
+In the example above, you can add more properties to the relationships by adding more Fields in the source to the
+Scheme. For example:
+
+```java
+Fields fields = new Fields("name", "nationality", "label", "prop1", "prop2");
+Scheme scheme = new RelationshipScheme(fields, fromIndex, toIndex);
+```
+
 
 ## TODO
 
