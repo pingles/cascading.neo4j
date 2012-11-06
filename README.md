@@ -119,3 +119,4 @@ Scheme scheme = new RelationshipScheme(fields, fromIndex, toIndex);
 ## TODO
 
 * What to do WRT SinkMode.REPLACE etc. if the node already exist in index
+* The local and hadoop versions do largely the same thing, but in different ways. It'd be nice to factor out as much as possible to reduce duplication.
