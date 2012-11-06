@@ -20,26 +20,26 @@ import java.io.IOException;
 /**
  * Allows the client to sink Nodes in the Neo4j database.
  */
-public class Neo4jNodeScheme extends Scheme {
+public class NodeScheme extends Scheme {
     private GraphDatabaseService service;
     private IndexSpec indexSpec;
     private Index<Node> index;
 
-    public Neo4jNodeScheme(GraphDatabaseService service) {
+    public NodeScheme(GraphDatabaseService service) {
         this.service = service;
     }
 
-    public Neo4jNodeScheme(String restService) {
+    public NodeScheme(String restService) {
         this.service = new RestGraphDatabase(restService);
     }
 
-    public Neo4jNodeScheme(GraphDatabaseService service, IndexSpec indexSpec) {
+    public NodeScheme(GraphDatabaseService service, IndexSpec indexSpec) {
         this.service = service;
         this.indexSpec = indexSpec;
         index = service.index().forNodes(indexSpec.getNodeTypeName());
     }
 
-    public Neo4jNodeScheme(String restService, IndexSpec indexSpec) {
+    public NodeScheme(String restService, IndexSpec indexSpec) {
         this.service = new RestGraphDatabase(restService);
         this.indexSpec = indexSpec;
         index = service.index().forNodes(indexSpec.getNodeTypeName());

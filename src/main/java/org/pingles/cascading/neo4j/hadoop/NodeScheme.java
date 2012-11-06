@@ -16,14 +16,14 @@ import org.pingles.cascading.neo4j.IndexSpec;
 import java.io.IOException;
 
 // Scheme<Config, Input, Output, SourceContext, SinkContext
-public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
+public class NodeScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
     private IndexSpec indexSpec;
 
-    public Neo4jNodeScheme(Fields sourceFields) {
+    public NodeScheme(Fields sourceFields) {
         this(sourceFields, null);
     }
 
-    public Neo4jNodeScheme(Fields sourceFields, IndexSpec indexSpec) {
+    public NodeScheme(Fields sourceFields, IndexSpec indexSpec) {
         super(sourceFields, 1);     // hardcode sinkparts to 1 to minimise socket timeout exception
         if (indexSpec != null)
             this.indexSpec = indexSpec;
@@ -51,11 +51,11 @@ public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollect
         OutputCollector collector = (OutputCollector) sinkCall.getOutput();
         TupleEntry tuple = sinkCall.getOutgoingEntry();
 
-        Neo4jNodeTuple node;
+        NodeTuple node;
         if (indexSpec != null) {
-            node = new Neo4jNodeTuple(getSourceFields(), tuple, indexSpec);
+            node = new NodeTuple(getSourceFields(), tuple, indexSpec);
         } else {
-            node = new Neo4jNodeTuple(getSourceFields(), tuple);
+            node = new NodeTuple(getSourceFields(), tuple);
         }
 
         collector.collect(Tuple.NULL, node);

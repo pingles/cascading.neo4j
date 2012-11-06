@@ -9,12 +9,12 @@ import org.neo4j.graphdb.index.Index;
 import org.pingles.cascading.neo4j.IndexSpec;
 import org.pingles.cascading.neo4j.StringRelationshipType;
 
-public class Neo4jRelationshipTuple extends Neo4jTuple implements Neo4jWritable {
+public class RelationshipTuple extends Neo4jTuple implements Neo4jWritable {
     private final IndexSpec fromIndexSpec;
     private final IndexSpec toIndexSpec;
     private final TupleEntry tupleEntry;
 
-    public Neo4jRelationshipTuple(IndexSpec fromIndex, IndexSpec toIndex, TupleEntry tupleEntry) {
+    public RelationshipTuple(IndexSpec fromIndex, IndexSpec toIndex, TupleEntry tupleEntry) {
         this.fromIndexSpec = fromIndex;
         this.toIndexSpec = toIndex;
         this.tupleEntry = tupleEntry;

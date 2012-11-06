@@ -4,7 +4,6 @@ import cascading.flow.Flow;
 import cascading.operation.Identity;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.test.HadoopPlatform;
 import cascading.tuple.Fields;
@@ -236,7 +235,7 @@ public class FlowTest {
 
     private void flowRelations(Fields relationshipFields, String filename, IndexSpec fromIndex, IndexSpec toIndex) {
         Tap relationsTap = hadoopPlatform.getDelimitedFile(relationshipFields, ",", filename);
-        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new Neo4jRelationshipScheme(relationshipFields, fromIndex, toIndex));
+        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new RelationshipScheme(relationshipFields, fromIndex, toIndex));
         Pipe nodePipe = new Each("relations", relationshipFields, new Identity());
         Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(relationsTap, sinkTap, nodePipe);
         nodeFlow.complete();
@@ -247,11 +246,11 @@ public class FlowTest {
     }
 
     private void flowNodes(Fields sourceFields, String filename, IndexSpec indexSpec) {
-        Neo4jNodeScheme scheme;
+        NodeScheme scheme;
         if (indexSpec != null) {
-            scheme = new Neo4jNodeScheme(sourceFields, indexSpec);
+            scheme = new NodeScheme(sourceFields, indexSpec);
         } else {
-            scheme = new Neo4jNodeScheme(sourceFields);
+            scheme = new NodeScheme(sourceFields);
         }
 
         Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", filename);

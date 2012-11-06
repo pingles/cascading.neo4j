@@ -18,7 +18,7 @@ import org.pingles.cascading.neo4j.StringRelationshipType;
 
 import java.io.IOException;
 
-public class Neo4jRelationshipScheme extends Scheme {
+public class RelationshipScheme extends Scheme {
     private final GraphDatabaseService service;
     private final IndexSpec fromIndexSpec;
     private final IndexSpec toIndexSpec;
@@ -30,11 +30,11 @@ public class Neo4jRelationshipScheme extends Scheme {
      *               Additional values will be used to store properties on the relationship.
      * @param indexSpec
      */
-    public Neo4jRelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec indexSpec) {
+    public RelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec indexSpec) {
         this(service, fields, indexSpec, indexSpec);
     }
 
-    public Neo4jRelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
+    public RelationshipScheme(GraphDatabaseService service, Fields fields, IndexSpec fromIndexSpec, IndexSpec toIndexSpec) {
         if (fields.size() < 3) {
             throw new IllegalArgumentException("fields should contain at least 3 field names. Example: from, to, and relationship type.");
         }

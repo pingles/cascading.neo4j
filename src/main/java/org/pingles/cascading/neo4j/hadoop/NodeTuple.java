@@ -8,16 +8,16 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.pingles.cascading.neo4j.IndexSpec;
 
-public class Neo4jNodeTuple extends Neo4jTuple implements Neo4jWritable {
+public class NodeTuple extends Neo4jTuple implements Neo4jWritable {
     private final TupleEntry tupleEntry;
     private IndexSpec indexSpec;
     private Fields sinkFields;
 
-    public Neo4jNodeTuple(Fields sinkFields, TupleEntry tupleEntry) {
+    public NodeTuple(Fields sinkFields, TupleEntry tupleEntry) {
         this(sinkFields, tupleEntry, null);
     }
 
-    public Neo4jNodeTuple(Fields sinkFields, TupleEntry tupleEntry, IndexSpec indexSpec) {
+    public NodeTuple(Fields sinkFields, TupleEntry tupleEntry, IndexSpec indexSpec) {
         this.tupleEntry = tupleEntry;
         this.indexSpec = indexSpec;
         this.sinkFields = sinkFields;

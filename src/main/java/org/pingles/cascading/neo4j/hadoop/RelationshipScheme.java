@@ -15,11 +15,11 @@ import org.pingles.cascading.neo4j.IndexSpec;
 
 import java.io.IOException;
 
-public class Neo4jRelationshipScheme  extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
+public class RelationshipScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
     private final IndexSpec fromIndex;
     private final IndexSpec toIndex;
 
-    public Neo4jRelationshipScheme(Fields fields, IndexSpec fromIndex, IndexSpec toIndex) {
+    public RelationshipScheme(Fields fields, IndexSpec fromIndex, IndexSpec toIndex) {
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
     }
@@ -46,7 +46,7 @@ public class Neo4jRelationshipScheme  extends Scheme<JobConf, RecordReader, Outp
         OutputCollector collector = sinkCall.getOutput();
         TupleEntry outgoingEntry = sinkCall.getOutgoingEntry();
 
-        Neo4jRelationshipTuple rel = new Neo4jRelationshipTuple(fromIndex, toIndex, outgoingEntry);
+        RelationshipTuple rel = new RelationshipTuple(fromIndex, toIndex, outgoingEntry);
 
         collector.collect(Tuple.NULL, rel);
 
