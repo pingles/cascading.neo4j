@@ -24,7 +24,7 @@ public class NodeScheme extends Scheme<JobConf, RecordReader, OutputCollector, O
     }
 
     public NodeScheme(Fields sourceFields, IndexSpec indexSpec) {
-        super(sourceFields, 1);     // hardcode sinkparts to 1 to minimise socket timeout exception
+        super(sourceFields);
         if (indexSpec != null)
             this.indexSpec = indexSpec;
     }
