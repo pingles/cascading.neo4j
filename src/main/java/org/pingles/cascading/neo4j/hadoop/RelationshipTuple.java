@@ -31,23 +31,16 @@ public class RelationshipTuple extends Neo4jTuple implements Neo4jWritable {
         Node fromNode = fromIndex.get(cleanPropertyName(fromIndexSpec.getFirstIndexPropertyName()), node1Key).getSingle();
         Node toNode = toIndex.get(cleanPropertyName(toIndexSpec.getFirstIndexPropertyName()), node2Key).getSingle();
 
-        Transaction transaction = service.beginTx();
-        try {
-            Relationship relationship = fromNode.createRelationshipTo(toNode, new StringRelationshipType(relationshipLabel));
+        Relationship relationship = fromNode.createRelationshipTo(toNode, new StringRelationshipType(relationshipLabel));
 
-            if (tupleEntry.getFields().size() > 3) {
-                for (int i = 3; i < tupleEntry.size(); i++) {
-                    String propertyName = (String) tupleEntry.getFields().get(i);
-                    Object propertyValue = tupleEntry.getObject(i);
+        if (tupleEntry.getFields().size() > 3) {
+            for (int i = 3; i < tupleEntry.size(); i++) {
+                String propertyName = (String) tupleEntry.getFields().get(i);
+                Object propertyValue = tupleEntry.getObject(i);
 
-                    if (propertyValue != null)      // would work too without but save a PUT request
-                        relationship.setProperty(cleanPropertyName(propertyName), propertyValue);
-                }
+                if (propertyValue != null)      // would work too without but save a PUT request
+                    relationship.setProperty(cleanPropertyName(propertyName), propertyValue);
             }
-
-            transaction.success();
-        } finally {
-            transaction.finish();
         }
     }
 }

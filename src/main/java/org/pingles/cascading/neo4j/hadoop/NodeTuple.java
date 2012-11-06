@@ -24,32 +24,24 @@ public class NodeTuple extends Neo4jTuple implements Neo4jWritable {
     }
 
     public void store(GraphDatabaseService service) {
-        Transaction transaction = service.beginTx();
+        Node node = service.createNode();
+        Fields fields = sinkFields;
 
-        try {
-            Node node = service.createNode();
-            Fields fields = sinkFields;
+        for (int idx = 0; idx < fields.size(); idx++) {
+            String fieldName = (String) fields.get(idx);
+            Object fieldValue = tupleEntry.getTuple().getObject(idx);
 
-            for (int idx = 0; idx < fields.size(); idx++) {
-                String fieldName = (String) fields.get(idx);
-                Object fieldValue = tupleEntry.getTuple().getObject(idx);
+            if (fieldValue != null)     // would work too without but save a PUT request
+                node.setProperty(cleanPropertyName(fieldName), fieldValue);
+        }
 
-                if (fieldValue != null)     // would work too without but save a PUT request
-                    node.setProperty(cleanPropertyName(fieldName), fieldValue);
+        if (indexSpec != null) {
+            Index<Node> index = service.index().forNodes(indexSpec.getNodeTypeName());
+
+            Fields indexProperties = indexSpec.getIndexProperties();
+            for (Comparable propName : indexProperties) {
+                index.add(node, cleanPropertyName(propName.toString()), tupleEntry.getObject(propName));
             }
-
-            if (indexSpec != null) {
-                Index<Node> index = service.index().forNodes(indexSpec.getNodeTypeName());
-
-                Fields indexProperties = indexSpec.getIndexProperties();
-                for (Comparable propName : indexProperties) {
-                    index.add(node, cleanPropertyName(propName.toString()), tupleEntry.getObject(propName));
-                }
-            }
-
-            transaction.success();
-        } finally {
-            transaction.finish();
         }
     }
 
