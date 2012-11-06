@@ -17,6 +17,12 @@ cascading.neo4j is hosted on [Conjars.org](http://conjars.org): a repository for
     <artifactId>cascading.neo4j</artifactId>
     <version>1.0</version>
 </dependency>
+<repositories>
+    <repository>
+        <id>conjars.org</id>
+        <url>http://conjars.org/repo</url>
+    </repository>
+</repositories>
 ```
 
 ### Leiningen
@@ -25,6 +31,7 @@ Add the following to your `project.clj`:
 
 ```clojure
 :dependencies [[org.pingles/cascading.neo4j "1.0"]
+:repositories {"conjars.org" "http://conjars.org/repo"}
 ```
 
 ## Usage
