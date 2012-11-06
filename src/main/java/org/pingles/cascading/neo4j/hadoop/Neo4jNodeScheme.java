@@ -59,5 +59,7 @@ public class Neo4jNodeScheme extends Scheme<JobConf, RecordReader, OutputCollect
         }
 
         collector.collect(Tuple.NULL, node);
+
+        flowProcess.increment("org.pingles.cascading.Neo4j", "Nodes Created", 1);
     }
 }

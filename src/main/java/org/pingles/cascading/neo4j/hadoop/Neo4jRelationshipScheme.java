@@ -16,12 +16,10 @@ import org.pingles.cascading.neo4j.IndexSpec;
 import java.io.IOException;
 
 public class Neo4jRelationshipScheme  extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
-    private final Fields fields;
     private final IndexSpec fromIndex;
     private final IndexSpec toIndex;
 
     public Neo4jRelationshipScheme(Fields fields, IndexSpec fromIndex, IndexSpec toIndex) {
-        this.fields = fields;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
     }
@@ -52,6 +50,6 @@ public class Neo4jRelationshipScheme  extends Scheme<JobConf, RecordReader, Outp
 
         collector.collect(Tuple.NULL, rel);
 
-        flowProcess.increment("org.pingles.cascading.Neo4j", "Nodes Created", 1);
+        flowProcess.increment("org.pingles.cascading.Neo4j", "Relationships Created", 1);
     }
 }
