@@ -71,7 +71,7 @@ the example above, to create an index on `name` you would create the scheme as f
 
 ```java
 IndexSpec usersIndex = new IndexSpec("users", new Fields("name"));
-NodeScheme scheme = new NodeScheme(new Fields("name", "nationality"));
+NodeScheme scheme = new NodeScheme(new Fields("name", "nationality"), usersIndex);
 ```
 
 Fields must intersect with the source fields (otherwise you'll generate errors trying to read attributes that don't exist).
