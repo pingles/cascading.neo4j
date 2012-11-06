@@ -5,6 +5,9 @@ sourcing data. It was built for use with Cascading 2.x and Hadoop 0.20.x.
 
 Current build status: [![Build Status](https://secure.travis-ci.org/pingles/cascading.neo4j.png)](http://secure.travis-ci.org/pingles/cascading.neo4j)
 
+It's a kind of work-in-progress: it works but seems much slower compared to Neo4j's batch processing. Given this, it
+may or may not be suitable for your flows.
+
 ## Installing
 
 cascading.neo4j is hosted on [Conjars.org](http://conjars.org): a repository for open-source Cascading libraries.
@@ -122,6 +125,11 @@ Fields fields = new Fields("name", "nationality", "label", "prop1", "prop2");
 Scheme scheme = new RelationshipScheme(fields, fromIndex, toIndex);
 ```
 
+### Batch Insert Operations
+
+The `Neo4jRecordWriter` will create a Neo4j `Transaction` around all writes. If you set `org.neo4j.rest.batch_transactions=true`
+the REST client will batch inserts made within that transaction. We've done a little experimentation with this and it
+seems to make flows slightly faster.
 
 ## TODO
 
