@@ -131,6 +131,13 @@ The `Neo4jRecordWriter` will create a Neo4j `Transaction` around all writes. If 
 the REST client will batch inserts made within that transaction. We've done a little experimentation with this and it
 seems to make flows slightly faster.
 
+The default behaviour of a `BatchTransaction` is to collect all mutations into a single REST call. `Neo4jRecordWriter` will
+use its own chunk size to help break apart large operations. This ensures that Hadoop can still monitor progress, and
+tweaks the size of the operations- large sets of mutations will result in lots of serialization for the REST calls.
+
+This can be configured through Hadoop's `JobConf` configuration, by setting `org.neo4j.rest.batch_transaction` and
+`org.pingles.neo4j.batch_size` properties.
+
 ## TODO
 
 * What to do WRT SinkMode.REPLACE etc. if the node already exist in index
