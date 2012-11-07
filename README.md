@@ -103,7 +103,7 @@ t_bot,french,NATIONALITY
 to be read a little like this:
 
 ```
-pingles --(NATIONALITY)--> british
+(pingles)-[:NATIONALITY]->(british)
 ```
 
 You construct a `RelationshipScheme` instance providing the `IndexSpec` that will be used to identify the nodes. The
