@@ -100,7 +100,7 @@ plam,canadian,NATIONALITY
 t_bot,french,NATIONALITY
 ```
 
-to be read a little like this:
+First field is the tail node, second is the head node, and third field is the relationship type. Graphically, it is represented in Cypher like this for the first row:
 
 ```
 (pingles)-[:NATIONALITY]->(british)
