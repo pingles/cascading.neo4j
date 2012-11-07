@@ -20,11 +20,29 @@ public class Neo4jOutputFormat<K, V> implements OutputFormat<K,V> {
     }
 
     public RecordWriter<K, V> getRecordWriter(FileSystem fileSystem, JobConf jobConf, String s, Progressable progress) throws IOException {
+        setNeo4jJavaClientSystemProperties(jobConf);
+
         String restConnectionString = jobConf.get(REST_CONN_STRING_CONFIG_PROPERTY);
         LOGGER.info("Creating RecordWriter, connecting to {}", restConnectionString);
+
         return new Neo4jRecordWriter(restConnectionString);
     }
 
+    private void setNeo4jJavaClientSystemProperties(JobConf jobConf) {
+        setSystemPropertyFromJobConf(jobConf, "org.neo4j.rest.batch_transaction");
+        setSystemPropertyFromJobConf(jobConf, "org.neo4j.rest.read_timeout");
+        setSystemPropertyFromJobConf(jobConf, "org.neo4j.rest.connect_timeout");
+        setSystemPropertyFromJobConf(jobConf, "org.neo4j.rest.stream");
+        setSystemPropertyFromJobConf(jobConf, "org.neo4j.rest.logging_filter");
+    }
+
     public void checkOutputSpecs(FileSystem fileSystem, JobConf entries) throws IOException {
+    }
+
+    private void setSystemPropertyFromJobConf(JobConf jobConf, String propertyName) {
+        String propertyValue = jobConf.get(propertyName);
+        if (propertyValue != null) {
+            System.setProperty(propertyName, propertyValue);
+        }
     }
 }

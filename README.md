@@ -127,7 +127,7 @@ Scheme scheme = new RelationshipScheme(fields, fromIndex, toIndex);
 
 ### Batch Insert Operations
 
-The `Neo4jRecordWriter` will create a Neo4j `Transaction` around all writes. If you set `org.neo4j.rest.batch_transactions=true`
+The `Neo4jRecordWriter` will create a Neo4j `Transaction` around all writes. If you set `org.neo4j.rest.batch_transaction=true`
 the REST client will batch inserts made within that transaction. We've done a little experimentation with this and it
 seems to make flows slightly faster.
 

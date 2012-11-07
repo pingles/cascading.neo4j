@@ -25,7 +25,10 @@ import org.neo4j.server.configuration.ServerConfigurator;
 import org.pingles.cascading.neo4j.IndexSpec;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import static junit.framework.Assert.*;
 import static org.pingles.cascading.neo4j.local.Neo4jTestCase.toList;
 
@@ -51,13 +54,23 @@ public class FlowTest {
         server.start();
     }
 
+    private void clearNeo4jSystemProperties() {
+        System.clearProperty("org.neo4j.rest.batch_transaction");
+        System.clearProperty("org.neo4j.rest.read_timeout");
+        System.clearProperty("org.neo4j.rest.connect_timeout");
+        System.clearProperty("org.neo4j.rest.stream");
+        System.clearProperty("org.neo4j.rest.logging_filter");
+    }
+
     @After
     public void afterEach() throws IOException {
         neoService().index().forNodes("users").delete();    // CAUTION hard coded
         neoService().index().forNodes("nations").delete();
 
         server.stop();
+
         FileUtils.deleteDirectory(new File(NEO4J_DB_DIR));
+        clearNeo4jSystemProperties();
     }
 
     @Test
@@ -65,6 +78,17 @@ public class FlowTest {
         Fields sourceFields = new Fields("name");
 
         flowNodes(sourceFields, "src/test/resources/names.csv");
+
+        assertEquals(2 + 1, toList(neoService().getAllNodes()).size());
+    }
+
+    @Test
+    public void shouldStoreNodesWhenUsingBatchTransaction() {
+        Fields sourceFields = new Fields("name");
+
+        HashMap<Object, Object> properties = new HashMap<Object, Object>();
+        properties.put("org.neo4j.rest.batch_transaction", "true");
+        flowNodes(sourceFields, "src/test/resources/names.csv", properties);
 
         assertEquals(2 + 1, toList(neoService().getAllNodes()).size());
     }
@@ -242,10 +266,18 @@ public class FlowTest {
     }
 
     private void flowNodes(Fields sourceFields, String filename) {
-        flowNodes(sourceFields, filename, null);
+        flowNodes(sourceFields, filename, null, new HashMap<Object, Object>());
+    }
+
+    private void flowNodes(Fields sourceFields, String filename, HashMap<Object, Object> properties) {
+        flowNodes(sourceFields, filename, null, properties);
     }
 
     private void flowNodes(Fields sourceFields, String filename, IndexSpec indexSpec) {
+        flowNodes(sourceFields, filename, indexSpec, new HashMap<Object, Object>());
+    }
+
+    private void flowNodes(Fields sourceFields, String filename, IndexSpec indexSpec, Map<Object, Object> properties) {
         NodeScheme scheme;
         if (indexSpec != null) {
             scheme = new NodeScheme(sourceFields, indexSpec);
@@ -256,7 +288,7 @@ public class FlowTest {
         Tap nodeSourceTap = hadoopPlatform.getDelimitedFile(sourceFields, ",", filename);
         Tap nodeSinkTap = new Neo4jTap(REST_CONNECTION_STRING, scheme);
         Pipe nodePipe = new Each("Nodes", sourceFields, new Identity());
-        Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(nodeSourceTap, nodeSinkTap, nodePipe);
+        Flow nodeFlow = hadoopPlatform.getFlowConnector(properties).connect(nodeSourceTap, nodeSinkTap, nodePipe);
         nodeFlow.complete();
     }
 
