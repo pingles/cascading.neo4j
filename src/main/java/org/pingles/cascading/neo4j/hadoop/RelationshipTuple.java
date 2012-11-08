@@ -5,6 +5,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
 import org.pingles.cascading.neo4j.IndexSpec;
 import org.pingles.cascading.neo4j.StringRelationshipType;
 
@@ -51,12 +52,13 @@ public class RelationshipTuple extends Neo4jTuple implements Neo4jWritable {
 
     private Node lookupNodeInIndex(Index<Node> index, String indexPropertyName, Object objectValue) throws IndexLookupException {
         String cleanPropertyName = cleanPropertyName(indexPropertyName);
-        try {
-            Node node = index.get(cleanPropertyName, objectValue).getSingle();
-            return node;
-        } catch (Exception e) {
-            throw new IndexLookupException(index.getName(), cleanPropertyName, objectValue, e);
+        IndexHits<Node> nodes = index.get(cleanPropertyName, objectValue);
+
+        if (nodes.size() == 0) {
+            throw new IndexLookupException(index.getName(), cleanPropertyName, objectValue);
         }
+
+        return nodes.getSingle();
     }
 
     private Index<Node> getToIndex(GraphDatabaseService service) throws IndexDoesNotExistException {
@@ -85,9 +87,7 @@ public class RelationshipTuple extends Neo4jTuple implements Neo4jWritable {
         private final String propertyName;
         private final Object propertyValue;
 
-        public IndexLookupException(String indexName, String propertyName, Object propertyValue, Throwable cause) {
-            super(cause);
-
+        public IndexLookupException(String indexName, String propertyName, Object propertyValue) {
             this.indexName = indexName;
             this.propertyName = propertyName;
             this.propertyValue = propertyValue;
