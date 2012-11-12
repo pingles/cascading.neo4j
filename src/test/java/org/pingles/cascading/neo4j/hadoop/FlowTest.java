@@ -4,6 +4,7 @@ import cascading.flow.Flow;
 import cascading.operation.Identity;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
+import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.test.HadoopPlatform;
 import cascading.tuple.Fields;
@@ -201,12 +202,12 @@ public class FlowTest {
 
         IndexSpec usersIndex = new IndexSpec("users", nameField);
 
-        flowNodes(nameField, "src/test/resources/relations_by_id.csv", usersIndex);
+        flowNodes(nameField, "src/test/resources/names.csv", usersIndex);
 
-        flowRelations(relFields, "src/test/resources/relations_by_id.csv", usersIndex, null);
+        flowRelations(relFields, new Class[]{String.class, Long.class, String.class}, "src/test/resources/relations_by_id.csv", usersIndex, IndexSpec.BY_ID);
 
-        Node pingles = neoService().index().forNodes("users").get("name", "pingles").getSingle();
-        List<Relationship> relationships = toList(pingles.getRelationships());
+        Node plam = neoService().index().forNodes("users").get("name", "plam").getSingle();
+        List<Relationship> relationships = toList(plam.getRelationships());
         assertEquals(1, relationships.size());
         assertEquals(0, relationships.get(0).getEndNode().getId());
         assertEquals("TO_ROOT", relationships.get(0).getType().name());
@@ -301,8 +302,12 @@ public class FlowTest {
     }
 
     private void flowRelations(Fields relationshipFields, String filename, IndexSpec fromIndex, IndexSpec toIndex) {
-        Tap relationsTap = hadoopPlatform.getDelimitedFile(relationshipFields, ",", filename);
-        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new RelationshipScheme(relationshipFields, fromIndex, toIndex));
+        flowRelations(relationshipFields, null, filename, fromIndex, toIndex);
+    }
+
+    private void flowRelations(Fields relationshipFields, Class[] types, String filename, IndexSpec fromIndex, IndexSpec toIndex) {
+        Tap relationsTap = hadoopPlatform.getDelimitedFile(relationshipFields, ",", types, filename, SinkMode.KEEP);
+        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new RelationshipScheme(relationshipFields, fromIndex, IndexSpec.BY_ID));
         Pipe nodePipe = new Each("relations", relationshipFields, new Identity());
         Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(relationsTap, sinkTap, nodePipe);
         nodeFlow.complete();

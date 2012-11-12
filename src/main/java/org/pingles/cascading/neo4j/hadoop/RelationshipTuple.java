@@ -26,11 +26,20 @@ public class RelationshipTuple extends Neo4jTuple implements Neo4jWritable {
         String relationshipLabel = tupleEntry.getString(2);
 
         try {
-            Index<Node> fromIndex = getFromIndex(service);
-            Index<Node> toIndex = getToIndex(service);
+            Node fromNode, toNode;
+            if (fromIndexSpec.isByID()) {
+                fromNode = getNodeByID(service, (Long)fromKey); // CAUTION casting to Long because neo4j ID's are Long
+            } else {
+                Index<Node> fromIndex = getFromIndex(service);
+                fromNode = lookupNodeInIndex(fromIndex, fromIndexSpec.getFirstIndexPropertyName(), fromKey);
+            }
 
-            Node fromNode = lookupNodeInIndex(fromIndex, fromIndexSpec.getFirstIndexPropertyName(), fromKey);
-            Node toNode = lookupNodeInIndex(toIndex, toIndexSpec.getFirstIndexPropertyName(), toKey);
+            if (toIndexSpec.isByID()) {
+                toNode = getNodeByID(service, (Long)toKey);
+            } else {
+                Index<Node> toIndex = getToIndex(service);
+                toNode = lookupNodeInIndex(toIndex, toIndexSpec.getFirstIndexPropertyName(), toKey);
+            }
 
             Relationship relationship = fromNode.createRelationshipTo(toNode, new StringRelationshipType(relationshipLabel));
 
@@ -48,6 +57,10 @@ public class RelationshipTuple extends Neo4jTuple implements Neo4jWritable {
         } catch (IndexDoesNotExistException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Node getNodeByID(GraphDatabaseService service, Long id) {
+        return service.getNodeById(id);
     }
 
     private Node lookupNodeInIndex(Index<Node> index, String indexPropertyName, Object objectValue) throws IndexLookupException {
