@@ -195,6 +195,49 @@ public class FlowTest {
     }
 
     @Test
+    public void shouldCreateRelationBetweenNodesWithID() {
+        Fields nameField = new Fields("name");
+        Fields relFields = new Fields("name", "to", "relationship");
+
+        IndexSpec usersIndex = new IndexSpec("users", nameField);
+
+        flowNodes(nameField, "src/test/resources/relations_by_id.csv", usersIndex);
+
+        flowRelations(relFields, "src/test/resources/relations_by_id.csv", usersIndex, null);
+
+        Node pingles = neoService().index().forNodes("users").get("name", "pingles").getSingle();
+        List<Relationship> relationships = toList(pingles.getRelationships());
+        assertEquals(1, relationships.size());
+        assertEquals(0, relationships.get(0).getEndNode().getId());
+        assertEquals("TO_ROOT", relationships.get(0).getType().name());
+    }
+
+    @Test
+    public void shouldCreateRelationshipWhenUsingBatchTransaction() {
+        Fields nameField = new Fields("name");
+        Fields relFields = new Fields("name", "nationality", "relationship");
+
+        IndexSpec usersIndex = new IndexSpec("users", nameField);
+        IndexSpec nationsIndex = new IndexSpec("nations", nameField);
+
+        HashMap<Object, Object> properties = new HashMap<Object, Object>();
+        properties.put("org.neo4j.rest.batch_transaction", "true");
+        properties.put("org.pingles.neo4j.batch_size", 20);
+
+
+        flowNodes(relFields, "src/test/resources/names_and_nationality.csv", usersIndex);
+        flowNodes(nameField, "src/test/resources/nationalities.csv", nationsIndex);
+
+        flowRelations(relFields, "src/test/resources/names_and_nationality.csv", usersIndex, nationsIndex);
+
+        Node pingles = neoService().index().forNodes("users").get("name", "pingles").getSingle();
+        List<Relationship> relationships = toList(pingles.getRelationships());
+        assertEquals(1, relationships.size());
+        assertEquals("british", relationships.get(0).getEndNode().getProperty("name"));
+        assertEquals("NATIONALITY", relationships.get(0).getType().name());
+    }
+
+    @Test
     public void shouldCreateRelationshipsRemovingCascalogCharacterPrefixes() {
         Fields nameField = new Fields("?name");
         Fields relFields = new Fields("?name", "?nationality", "?relationship");
