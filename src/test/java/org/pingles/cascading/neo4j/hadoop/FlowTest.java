@@ -307,7 +307,7 @@ public class FlowTest {
 
     private void flowRelations(Fields relationshipFields, Class[] types, String filename, IndexSpec fromIndex, IndexSpec toIndex) {
         Tap relationsTap = hadoopPlatform.getDelimitedFile(relationshipFields, ",", types, filename, SinkMode.KEEP);
-        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new RelationshipScheme(relationshipFields, fromIndex, IndexSpec.BY_ID));
+        Tap sinkTap = new Neo4jTap(REST_CONNECTION_STRING, new RelationshipScheme(relationshipFields, fromIndex, toIndex));
         Pipe nodePipe = new Each("relations", relationshipFields, new Identity());
         Flow nodeFlow = hadoopPlatform.getFlowConnector().connect(relationsTap, sinkTap, nodePipe);
         nodeFlow.complete();

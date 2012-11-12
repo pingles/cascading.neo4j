@@ -21,13 +21,13 @@ public class IndexSpec implements Serializable {
         this.kind = Kind.USER;
     }
 
-    public IndexSpec(Kind kind) {
+    private IndexSpec(Kind kind) {
         this.kind = kind;
         this.indexName = "";
         this.fields = Fields.NONE;
     }
 
-    static enum Kind
+    private static enum Kind
     {
         BY_ID, USER
     }
